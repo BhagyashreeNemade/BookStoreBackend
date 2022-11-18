@@ -82,3 +82,9 @@ C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreap
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.pdb
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.genruntimeconfig.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.StaticWebAssets.xml
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.Views.V3.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.Views.V4.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\staticwebassets\BookStoreBackend.StaticWebAssets.xml

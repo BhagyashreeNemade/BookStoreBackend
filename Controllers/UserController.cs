@@ -17,7 +17,7 @@ namespace BookStoreBackend.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public IActionResult Registration([FromBody] RegisterModel userRegistration)
+        public IActionResult Registration(RegisterModel userRegistration)
         {
             try
             {
@@ -36,6 +36,28 @@ namespace BookStoreBackend.Controllers
                 throw;
             }
         }
+        [HttpPost]
+        [Route("login")]
+        public IActionResult UserLogin(LoginModel loginModel)
+        {
+            try
+            {
+                var result = iUserBl.UserLogin(loginModel);
+                if (result != null)
+                {
+                    return Ok(new { success = true, message = "Login Successful", data = result });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Login Failed" });
+                }
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
 
     }
 }
