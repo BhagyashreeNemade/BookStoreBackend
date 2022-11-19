@@ -1,0 +1,15 @@
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Business Layer.deps.json
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Business Layer.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Business Layer.pdb
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Common Layer.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Repository Layer.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Repository Layer.pdb
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\bin\Debug\netcoreapp3.1\Common Layer.pdb
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.csproj.AssemblyReference.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.AssemblyInfoInputs.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.AssemblyInfo.cs
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.csproj.CoreCompileInputs.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.csproj.CopyComplete
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\Business Layer\obj\Debug\netcoreapp3.1\Business Layer.pdb
