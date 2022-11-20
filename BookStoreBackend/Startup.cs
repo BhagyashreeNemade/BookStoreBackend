@@ -36,48 +36,61 @@ namespace BookStoreBackend
             services.AddTransient<IUserBL, UserBL>();
             services.AddTransient<IUserRL, UserRL>();
             services.AddControllers();
-            services.AddSwaggerGen(setup =>
+            services.AddSwaggerGen();
+            services.AddSwaggerGen(opt =>
             {
-                // Include 'SecurityScheme' to use JWT Authentication
-                var jwtSecurityScheme = new OpenApiSecurityScheme
+                opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Book Store Web API", Version = "v1", Description = "This is Book Store Web API using 3 tier Architecture with Entity Framework - Database First Approach." });
+                opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Scheme = "bearer",
-                    BearerFormat = "JWT",
-                    Name = "JWT Authentication",
                     In = ParameterLocation.Header,
+                    Description = "Please enter token",
+                    Name = "Authorization",
                     Type = SecuritySchemeType.Http,
-                    Description = "Put **_ONLY_** your JWT Bearer token on textbox below!",
-
-                    Reference = new OpenApiReference
-                    {
-                        Id = JwtBearerDefaults.AuthenticationScheme,
-                        Type = ReferenceType.SecurityScheme
-                    }
-                };
-                setup.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
-                setup.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
+                });
+                opt.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    {jwtSecurityScheme, Array.Empty<string>() }
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type=ReferenceType.SecurityScheme,
+                            Id="Bearer"
+                        }
+                    },
+                    new string[]{}
+                }
                 });
             });
 
-            services.AddAuthentication(x =>
+            services.AddAuthentication(option =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x =>
+                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
             {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Key"])),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Key"])) //Configuration["JwtToken:SecretKey"]
                 };
             });
 
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(
+                name: "AllowOrigin",
+                  builder => {
+                      builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                  });
+            });
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -90,6 +103,10 @@ namespace BookStoreBackend
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors("AllowOrigin");
+
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

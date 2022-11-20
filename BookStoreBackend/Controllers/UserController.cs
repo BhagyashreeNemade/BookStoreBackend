@@ -1,6 +1,8 @@
 ﻿using Business_Layer.Interface;
 using Common_Layer.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookStoreBackend.Controllers
 {
@@ -79,7 +81,30 @@ namespace BookStoreBackend.Controllers
                 throw;
             }
         }
+        [Authorize]
+        [HttpPost]
+        [Route("ResetPassword")]
+        public IActionResult ResetPassword(ResetModel resetModel)
+        {
+            try
+            {
+                var EmailId = User.FindFirst(ClaimTypes.Email).Value.ToString();
+                var result = this.iUserBl.ResetPassword(resetModel, EmailId);
 
+                if (result != null)
+                {
+                    return Ok(new { Success = true, Message = " Password reset succcessful" });
+                }
+                else
+                {
+                    return BadRequest(new { Success = false, Message = "Password reset unsuccessful" });
+                }
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
 
     }
 }

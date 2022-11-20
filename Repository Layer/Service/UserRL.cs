@@ -163,6 +163,43 @@ namespace Repository_Layer.Service
             }
 
         }
+        public bool ResetPassword(ResetModel resetModel, string EmailId)
+        {
+            sqlConnection = new SqlConnection(this.Configuration.GetConnectionString("DBConnection"));
+            using (sqlConnection)
+            {
+                try
+                {
+                    if (resetModel.ResetPassword.Equals(resetModel.ConfirmPassword))
+                    {
+                        SqlCommand command = new SqlCommand("dbo.ResetPassword", sqlConnection);
+                        command.CommandType = CommandType.StoredProcedure;
+                        sqlConnection.Open();
+                        command.Parameters.AddWithValue("@EmailId", EmailId);
+                        command.Parameters.AddWithValue("@Password", resetModel.ResetPassword);
+                        int result = command.ExecuteNonQuery();
+                        if (result > 0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                        return false;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+        }
 
 
     }
