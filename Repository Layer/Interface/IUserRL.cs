@@ -9,5 +9,6 @@ namespace Repository_Layer.Interface
     {
         public bool Registration(RegisterModel model);
         public string UserLogin(LoginModel loginModel);
+        public string ForgetPassword(string Email);
     }
 }

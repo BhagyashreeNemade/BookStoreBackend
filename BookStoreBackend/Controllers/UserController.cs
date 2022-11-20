@@ -58,6 +58,28 @@ namespace BookStoreBackend.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("ForgetPassword/{EmailId}")]
+        public IActionResult ForgetPassword(string EmailId)
+        {
+            try
+            {
+                var result = this.iUserBl.ForgetPassword(EmailId);
+                if (result != null)
+                {
+                    return Ok(new { success = true, message = "Mail Sent Successful" });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Mail UnSuceessfull" });
+                }
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
 
     }
 }
