@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Common_Layer.Model
 {
-    public class MSMQ
+    public class MSMQModel
     {
         MessageQueue messageQueue = new MessageQueue();
 

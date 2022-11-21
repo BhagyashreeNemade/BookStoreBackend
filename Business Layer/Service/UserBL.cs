@@ -9,17 +9,16 @@ namespace Business_Layer.Service
 {
     public class UserBL : IUserBL
     {
-        private readonly IUserRL iuserRL;
-        public UserBL(IUserRL iuserRL)
+        private readonly IUserRL userRL;
+        public UserBL(IUserRL userRL)
         {
-            this.iuserRL = iuserRL;
+            this.userRL = userRL;
         }
-
-        public bool Registration(RegisterModel userRegistrationModel)
+        public RegistrationModel AddUser(RegistrationModel usermodel)
         {
             try
             {
-                return iuserRL.Registration(userRegistrationModel);
+                return this.userRL.AddUser(usermodel);
             }
             catch (Exception)
             {
@@ -27,11 +26,11 @@ namespace Business_Layer.Service
                 throw;
             }
         }
-        public string UserLogin(LoginModel loginModel)
+        public string UserLogin(LoginModel login)
         {
             try
             {
-                return iuserRL.UserLogin(loginModel);
+                return this.userRL.UserLogin(login);
             }
             catch (Exception)
             {
@@ -43,7 +42,8 @@ namespace Business_Layer.Service
         {
             try
             {
-                return iuserRL.ForgetPassword(Email);
+                return this.userRL.ForgetPassword(Email);
+
             }
             catch (Exception)
             {
@@ -51,16 +51,19 @@ namespace Business_Layer.Service
                 throw;
             }
         }
-        public bool ResetPassword(ResetModel resetModel, string EmailId)
+        public bool ResetPassword(string EmailId, string Password)
         {
             try
             {
-                return iuserRL.ResetPassword(resetModel, EmailId);
+                return this.userRL.ResetPassword(EmailId, Password);
             }
             catch (Exception)
             {
-                throw new Exception();
+
+                throw;
             }
         }
+
+
     }
 }

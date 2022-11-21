@@ -2,6 +2,7 @@
 using Common_Layer.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Security.Claims;
 
 namespace BookStoreBackend.Controllers
@@ -10,101 +11,94 @@ namespace BookStoreBackend.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserBL iUserBl;
-
-        public UserController(IUserBL iUserBl)
+        private readonly IUserBL userBL;
+        public UserController(IUserBL userBL)
         {
-            this.iUserBl = iUserBl;
+            this.userBL = userBL;
         }
-
-        [HttpPost]
-        [Route("Register")]
-        public IActionResult Registration(RegisterModel userRegistration)
+        [HttpPost("Register")]
+        public IActionResult UserRegistration(RegistrationModel userRegistration)
         {
             try
             {
-                var result = this.iUserBl.Registration(userRegistration);
-                if (result != null)
+                RegistrationModel registrationModel = userBL.AddUser(userRegistration);
+                if (registrationModel != null)
                 {
-                    return Ok(new { success = true, message = "Registration Successfull" });
+                    return this.Ok(new { success = true, message = "Registration Successfull", data = registrationModel });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Registration UnSuceessfull" });
+                    return this.BadRequest();
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-                throw;
+
+                throw ex;
             }
         }
-        [HttpPost]
-        [Route("login")]
-        public IActionResult UserLogin(LoginModel loginModel)
+        [HttpPost("Login")]
+        public IActionResult UserLogin(LoginModel userlogin)
         {
             try
             {
-                var result = iUserBl.UserLogin(loginModel);
+                var result = userBL.UserLogin(userlogin);
+
+
                 if (result != null)
                 {
-                    return Ok(new { success = true, message = "Login Successful", data = result });
+                    return this.Ok(new { success = true, message = "Login Successful", data = result });
                 }
                 else
-                {
-                    return BadRequest(new { success = false, message = "Login Failed" });
-                }
+
+                    return this.BadRequest(new { success = false, message = "Something Goes Wrong,Login Unsuccessful" });
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-                throw;
+
+                throw ex;
             }
         }
-
-        [HttpPost]
-        [Route("ForgetPassword/{EmailId}")]
-        public IActionResult ForgetPassword(string EmailId)
+        [HttpPost("ForgotPassword")]
+        public IActionResult ForgetPassword(ForgotPassword forgotpassword)
         {
             try
             {
-                var result = this.iUserBl.ForgetPassword(EmailId);
+                var result = userBL.ForgetPassword(forgotpassword.Email);
                 if (result != null)
                 {
-                    return Ok(new { success = true, message = "Mail Sent Successful" });
+                    return this.Ok(new { success = true, message = "Mail Sent Succesfully" });
                 }
                 else
-                {
-                    return BadRequest(new { success = false, message = "Mail UnSuceessfull" });
-                }
+                    return this.BadRequest(new { success = false, message = "Something Goes Wrong" });
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-                throw;
+
+                throw ex;
             }
         }
-        [Authorize]
-        [HttpPost]
-        [Route("ResetPassword")]
-        public IActionResult ResetPassword(ResetModel resetModel)
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("resetpassword")]
+        public ActionResult ResetPassword(ResetPassword resetPassword)
         {
             try
             {
-                var EmailId = User.FindFirst(ClaimTypes.Email).Value.ToString();
-                var result = this.iUserBl.ResetPassword(resetModel, EmailId);
-
-                if (result != null)
+                var email = User.FindFirst(ClaimTypes.Email).Value.ToString();
+                var result = userBL.ResetPassword(email, resetPassword.Password);
+                if (result != false)
                 {
-                    return Ok(new { Success = true, Message = " Password reset succcessful" });
+                    return this.Ok(new { success = true, message = "Password Changed Succesfully" });
                 }
                 else
-                {
-                    return BadRequest(new { Success = false, Message = "Password reset unsuccessful" });
-                }
+                    return this.BadRequest(new { success = false, message = "Something Goes Wrong" });
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-                throw;
+
+                throw ex;
             }
         }
-
     }
 }

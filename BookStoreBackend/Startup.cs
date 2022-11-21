@@ -33,64 +33,73 @@ namespace BookStoreBackend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IUserBL, UserBL>();
-            services.AddTransient<IUserRL, UserRL>();
-            services.AddControllers();
-            services.AddSwaggerGen();
-            services.AddSwaggerGen(opt =>
+            services.AddSwaggerGen(c =>
             {
-                opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Book Store Web API", Version = "v1", Description = "This is Book Store Web API using 3 tier Architecture with Entity Framework - Database First Approach." });
-                opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Welcome to BookStore" });
+
+                var securitySchema = new OpenApiSecurityScheme
                 {
-                    In = ParameterLocation.Header,
-                    Description = "Please enter token",
+                    Description = "Using the Authorization header with the Bearer scheme.",
+
                     Name = "Authorization",
+
+                    In = ParameterLocation.Header,
+
                     Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "bearer"
-                });
-                opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                {
-                    new OpenApiSecurityScheme
+
+                    Scheme = "bearer",
+
+                    Reference = new OpenApiReference
                     {
-                        Reference = new OpenApiReference
-                        {
-                            Type=ReferenceType.SecurityScheme,
-                            Id="Bearer"
-                        }
-                    },
-                    new string[]{}
-                }
+                        Type = ReferenceType.SecurityScheme,
+
+                        Id = "Bearer"
+                    }
+                };
+                c.AddSecurityDefinition("Bearer", securitySchema);
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securitySchema, new[] { "Bearer" } }
+
                 });
             });
+            services.AddTransient<IUserBL, UserBL>();
+            services.AddTransient<IUserRL, UserRL>();
+            services.AddTransient<IAdminBL, AdminBL>();
+            services.AddTransient<IAdminRL, AdminRL>();
 
             services.AddAuthentication(option =>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(options =>
+            })
+            .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
+
                     ValidateAudience = false,
+
                     ValidateLifetime = false,
+
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Key"])) //Configuration["JwtToken:SecretKey"]
+
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:SecKey"])) //Configuration["JwtToken:SecretKey"]
                 };
+
             });
-
-
+            services.AddMemoryCache();
             services.AddCors(options =>
             {
                 options.AddPolicy(
                 name: "AllowOrigin",
-                  builder => {
-                      builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-                  });
+              builder => {
+                  builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+              });
             });
+
+
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -104,22 +113,19 @@ namespace BookStoreBackend
 
             app.UseRouting();
             app.UseCors("AllowOrigin");
-
-
-            app.UseAuthentication();
-
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("../swagger/v1/swagger.json", "BookStore");
+            });
+            //This middleware is used to authorizes a user to access secure resources. 
             app.UseAuthorization();
-
+            app.UseAuthentication();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("../swagger/v1/swagger.json", "My API V1");
-            });
-
+            
         }
     }
 }

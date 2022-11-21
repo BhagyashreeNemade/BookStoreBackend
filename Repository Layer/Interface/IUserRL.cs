@@ -7,9 +7,9 @@ namespace Repository_Layer.Interface
 {
     public interface IUserRL
     {
-        public bool Registration(RegisterModel model);
-        public string UserLogin(LoginModel loginModel);
-        public string ForgetPassword(string Email);
-        public bool ResetPassword(ResetModel resetModel, string EmailId);
+        public RegistrationModel AddUser(RegistrationModel usermodel);
+        public string UserLogin(LoginModel login);
+        string ForgetPassword(string email);
+        public bool ResetPassword(string EmailId, string Password);
     }
 }
