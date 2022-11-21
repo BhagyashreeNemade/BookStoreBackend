@@ -76,5 +76,103 @@ namespace Repository_Layer.Service
             }
 
         }
+        public List<BookModel> GetAllBooks()
+        {
+            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
+            using (con)
+            {
+                try
+                {
+                    List<BookModel> bookResponse = new List<BookModel>();
+                    SqlCommand cmd = new SqlCommand("spGetAllBooks", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    con.Open();
+                    SqlDataReader rdr = cmd.ExecuteReader();
+
+                    if (rdr.HasRows)
+                    {
+                        while (rdr.Read())
+                        {
+                            BookModel bookModel = new BookModel
+                            {
+                                BookId = Convert.ToInt32(rdr["BookId"]),
+                                BookName = Convert.ToString(rdr["BookName"]),
+                                Author = Convert.ToString(rdr["Author"]),
+                                BookImage = Convert.ToString(rdr["BookImage"]),
+                                BookDetail = Convert.ToString(rdr["BookDetail"]),
+                                DiscountPrice = Convert.ToDouble(rdr["DiscountPrice"]),
+                                ActualPrice = Convert.ToDouble(rdr["ActualPrice"]),
+                                Quantity = Convert.ToInt32(rdr["Quantity"]),
+                                Rating = Convert.ToDouble(rdr["Rating"]),
+                                RatingCount = Convert.ToInt32(rdr["RatingCount"])
+                            };
+                            bookResponse.Add(bookModel);
+                        }
+                        con.Close();
+                        return bookResponse;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+
+        }
+        public BookModel GetBookById(int bookId)
+        {
+
+            try
+            {
+                this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
+                using (con)
+                {
+                    BookModel bookModel = new BookModel();
+                    SqlCommand cmd = new SqlCommand("spGetBookById", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@BookId", bookId);
+
+                    con.Open();
+                    SqlDataReader rdr = cmd.ExecuteReader();
+
+
+                    if (rdr.HasRows)
+                    {
+                        while (rdr.Read())
+                        {
+
+                            bookModel.BookId = Convert.ToInt32(rdr["BookId"]);
+                            bookModel.BookName = Convert.ToString(rdr["BookName"]);
+                            bookModel.Author = Convert.ToString(rdr["Author"]);
+                            bookModel.BookImage = Convert.ToString(rdr["BookImage"]);
+                            bookModel.BookDetail = Convert.ToString(rdr["BookDetail"]);
+                            bookModel.DiscountPrice = Convert.ToDouble(rdr["DiscountPrice"]);
+                            bookModel.ActualPrice = Convert.ToDouble(rdr["ActualPrice"]);
+                            bookModel.Quantity = Convert.ToInt32(rdr["Quantity"]);
+                            bookModel.Rating = Convert.ToDouble(rdr["Rating"]);
+                            bookModel.RatingCount = Convert.ToInt32(rdr["RatingCount"]);
+                        }
+                        con.Close();
+                        return bookModel;
+                    }
+                    else
+                    {
+                        con.Close();
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
