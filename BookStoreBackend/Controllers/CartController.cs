@@ -65,6 +65,49 @@ namespace BookStoreBackend.Controllers
                 throw;
             }
         }
+        [HttpGet("GetAllCartlist")]
+        public IActionResult GetCartlistitem()
+        {
+            try
+            {
+                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
+                var result = cartBL.GetAllCart(userId);
+                if (result != null)
+                {
+                    return this.Ok(new { data = result });
 
+                }
+                else
+                {
+                    return this.BadRequest();
+                }
+            }
+            catch (System.Exception)
+            {
+
+                throw;
+            }
+        }
+        [HttpPut("UpdateQty")]
+        public IActionResult UpdateQtyInCart(int cartId, int cartQty)
+        {
+            try
+            {
+                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
+                var res = cartBL.UpdateQtyInCart(cartId, cartQty, userId);
+                if (res.ToLower().Contains("success"))
+                {
+                    return Ok(new { success = true, message = "Update Qty sucessfull" });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Faild to update Qty" });
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
