@@ -174,5 +174,78 @@ namespace Repository_Layer.Service
                 throw ex;
             }
         }
+        public string DeleteBook(int bookId)
+        {
+            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
+            using (con)
+            {
+                try
+                {
+                    SqlCommand cmd = new SqlCommand("spDeleteBook", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@BookId", bookId);
+
+                    con.Open();
+                    var result = cmd.ExecuteNonQuery();
+                    con.Close();
+
+                    if (result != 0)
+                    {
+                        return "Book Deleted Successfully";
+                    }
+                    else
+                    {
+                        return "Failed to Delete the Book";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+
+        }
+        public BookModel UpdateBook(BookModel updateBook)
+        {
+            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
+            using (con)
+            {
+                try
+                {
+                    SqlCommand cmd = new SqlCommand("spUpdateBook", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@BookId", updateBook.BookId);
+                    cmd.Parameters.AddWithValue("@BookName", updateBook.BookName);
+                    cmd.Parameters.AddWithValue("@Author", updateBook.Author);
+                    cmd.Parameters.AddWithValue("@BookImage", updateBook.BookImage);
+                    cmd.Parameters.AddWithValue("@BookDetail", updateBook.BookDetail);
+                    cmd.Parameters.AddWithValue("@DiscountPrice", updateBook.DiscountPrice);
+                    cmd.Parameters.AddWithValue("@ActualPrice", updateBook.ActualPrice);
+                    cmd.Parameters.AddWithValue("@Quantity", updateBook.Quantity);
+                    cmd.Parameters.AddWithValue("@Rating", updateBook.Rating);
+                    cmd.Parameters.AddWithValue("@RatingCount", updateBook.RatingCount);
+                    con.Open();
+                    var result = cmd.ExecuteNonQuery();
+                    con.Close();
+
+                    if (result != 0)
+                    {
+                        return updateBook;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+        }
     }
 }
