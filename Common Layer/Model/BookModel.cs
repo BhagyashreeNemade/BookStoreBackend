@@ -17,4 +17,15 @@ namespace Common_Layer.Model
         public double Rating { get; set; }
         public int RatingCount { get; set; }
     }
+    public class BookModelForGetOrder
+    {
+        // bookName, authorName, DiscountPrice, OriginalPrice, bookImage, bookId
+        public int BookId { get; set; }
+        public string BookName { get; set; }
+        public string Author { get; set; }
+        public int DiscountPrice { get; set; }
+        public int ActualPrice { get; set; }
+        public string BookImage { get; set; }
+
+    }
 }

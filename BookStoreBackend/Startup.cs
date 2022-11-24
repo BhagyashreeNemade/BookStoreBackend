@@ -78,7 +78,10 @@ namespace BookStoreBackend
             services.AddTransient<ICartRL, CartRL>();
             services.AddTransient<IWishlistBL, WishlistBL>();
             services.AddTransient<IWishlistRL, WishlistRL>();
-
+            services.AddTransient<IAddressBL, AddressBL>();
+            services.AddTransient<IAddressRL, AddressRL>();
+            services.AddTransient<IOrderBL, OrderBL>();
+            services.AddTransient<IOrderRL, OrderRL>();
 
 
             services.AddAuthentication(option =>
