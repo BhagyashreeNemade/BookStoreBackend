@@ -82,6 +82,8 @@ namespace BookStoreBackend
             services.AddTransient<IAddressRL, AddressRL>();
             services.AddTransient<IOrderBL, OrderBL>();
             services.AddTransient<IOrderRL, OrderRL>();
+            services.AddTransient<IFeedBackBL, FeedBackBL>();
+            services.AddTransient<IFeedBackRL, FeedBackRL>();
 
 
             services.AddAuthentication(option =>
