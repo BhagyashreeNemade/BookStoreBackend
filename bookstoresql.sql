@@ -1,326 +1,283 @@
-create database BookStore
+create database BookStoreDB
 
-use BookStore
-drop table UserRegistration
+--Use DB--
+use BookStoreDB
 
-create table UserRegistration(
-UserId int not null identity(1,1) primary key,
-FullName varchar(50),
-Email varchar(50),
-Password varchar(50),
-Mobile_Number varchar(50)
-)
+--Table for User--
+create table Users (
+	UserId int identity (1,1) primary key,
+	FullName varchar(100) not null,
+	EmailId varchar(100) not null,
+	Password varchar(100) not null,
+	MobileNumber varchar(100) not null
+);
 
-select*from UserRegistration
-go
-create proc spAddUser(
-@fullname varchar(50),
-@email varchar(50) ,
-@password varchar(50) ,
-@mobilenumber varchar(50) 
-)
+--select table--
+select * from Users
+
+--Stored procedures for user--
+
+--Register--
+create procedure spRegister(
+	@FullName varchar(100),
+	@EmailId varchar(100),
+	@Password varchar(100),
+	@MobileNumber varchar(100)
+	)
 as
 begin
-insert into UserRegistration
-values(@fullname,@email,@password,@mobilenumber)
+	if(not exists(select EmailId from Users where EmailId=@EmailId))
+	begin
+		insert into Users
+		values(@FullName,@EmailId,@Password,@MobileNumber);
+	end
 end
-go
 
-use BookStore
-create table UserLogin(
-Email varchar(50),
-Password varchar(50)
-)
-
-select*from UserLogin
-go
-create proc spUserLogin
-
-(
-@email varchar(50),
-@password varchar(50)
-)
-
+--Login--
+create procedure spLogin(
+	@EmailId varchar(100)
+	)
 as
-begin 
-     select * from UserRegistration where (Email = @email and Password = @password)
+begin
+	select * from Users where EmailId=@EmailId;
 end
-go
-select * from Users
-go
-CREATE PROCEDURE ForgotPassword
-(
-@EmailId varchar(180)
-)
-As
-Begin
-	Select * from UserRegistration where Email=@EmailId
-End;
 
-go
-
-CREATE PROCEDURE SP_ResetPassword @EmailId VARCHAR(100), @Password VARCHAR (100)
-AS
-BEGIN
-UPDATE UserRegistration
-SET Password= @Password where EmailId=@EmailId
-END
-drop procedure ForgotPassword
-
-(
-@EmailId varchar(50)
-)
-
+--Forget Password--
+create procedure spForget(
+	@EmailId varchar(100)
+	)
 as
-begin 
-     update UserRegistration set Password=null where Email=@EmailId
-end 
-drop procedure Reset_Password
-GO
-CREATE PROCEDURE [dbo].[Reset_Password] @Email VARCHAR(100), @Password VARCHAR (100)
-AS
-BEGIN
-UPDATE UserRegistration SET Password = @Password WHERE Email = @Email
-END
-go
+begin
+	select * from Users where EmailId=@EmailId;
+end
 
-create procedure spResetPassword
-
-(
-@EmailId varchar(50),
-@Password varchar(50)
-)
-
+--reset password--
+create procedure spResetPassword(
+	@EmailId varchar(100),
+	@Password varchar(100)
+	)
 as
-begin 
-     update UserRegistration set Password=@Password where Email=@EmailId
-end 
-go
+begin
+	update Users set Password = @Password where EmailId = @EmailId;
+end
 
+--Admin table--
 create table Admin(
 	AdminId int identity (1,1) primary key,
-	FullName varchar(200) not null,
-	Email varchar(200) not null,
-	Password varchar(200) not null,
-	MobileNumber varchar(200) not null
+	FullName varchar(100) not null,
+	EmailId varchar(100) not null,
+	Password varchar(100) not null,
+	MobileNumber bigint not null
+);
+
+--select--
+select * from Admin
+
+--inserting admin details--
+insert into Admin 
+values('Admin','admin@gmail.com','123',1234567890);
+
+--admin login--
+create procedure spAdminLogin(
+	@EmailId varchar(100),
+	@Password varchar(100)
 	)
-go
-create procedure spAdminLogin
-(
-	@email varchar(200),
-    @password varchar(200)
-)
-as
-BEGIN
-	select * from Admin where Email = @email and Password = @password;
-END
-go
-
-insert into Admin values('Admin','admin@gmail.com','123','7275707070')
-delete from Admin where AdminId=1
-select*from Admin
-
-create table Books(
-	BookId int identity (1,1) primary key,
-	BookName varchar(200) not null,
-	Author varchar(200) not null,
-	BookImage varchar(max) not null,
-	BookDetail varchar(max) not null,
-	DiscountPrice float not null,
-	ActualPrice float not null,
-	Quantity int not null,
-	Rating float,
-	RatingCount int
-	)
-go
-create procedure spAddBook
-(
-    @BookName varchar(200),
-	@Author varchar(200),
-	@BookImage varchar(200),
-	@BookDetail varchar(max),
-	@DiscountPrice float,
-	@ActualPrice float,
-	@Quantity int,
-	@Rating float,
-	@RatingCount int,
-	@BookId int output
-)
-as
-BEGIN
-	insert into Books
-	values(@BookName, @Author, @BookImage, @BookDetail, @DiscountPrice, @ActualPrice, @Quantity, @Rating, @RatingCount);
-	set @BookId = SCOPE_IDENTITY()
-	return @BookId;
-END
-go
-create procedure spGetAllBooks
-as
-BEGIN
-	select * from Books;
-END
-Go
-
-create procedure spGetBookById
-(
-	@BookId int
-)
-as
-BEGIN
-	select * from Books where BookId = @BookId;
-END
-go
-
-go
-
-create procedure spDeleteBook
-(
-	@BookId int
-)
-as
-BEGIN 
-	delete from Books where BookId = @BookId;
-END 
-go
-
-create procedure spUpdateBook
-(
-	@BookId int,
-	@BookName varchar(200),
-	@Author varchar(200),
-	@BookImage varchar(200),
-	@BookDetail varchar(max),
-	@DiscountPrice float,
-	@ActualPrice float,
-	@Quantity int,
-	@Rating float,
-	@RatingCount int
-)
-as
-BEGIN 
-	update Books 
-	set BookName = @BookName, Author = @Author, BookImage = @BookImage, BookDetail = @BookDetail, DiscountPrice = @DiscountPrice, ActualPrice = @ActualPrice, Quantity = @Quantity, Rating = @Rating, RatingCount = @RatingCount where BookId = @BookId;
-END
-create table WishList(
-	WishListId int identity (1,1) primary key,
-	UserId int not null foreign key (UserId) references UserRegistration(UserId),
-	BookId int not null foreign key (BookId) references Books(BookId)
-	)
-go
-	create procedure spAddToWishList
-(
-	@UserId int,
-	@BookId int
-)
 as
 begin
-insert into WishList
-values( @UserId, @BookId);
+	select * from Admin where EmailId=@EmailId and Password = @Password;
 end
-go
-
-
-create procedure spGetAllWishList
-(
-	@UserId int
+--Book table--
+create table Books(
+	BookId int identity(1,1) primary key,
+	BookName varchar(100) not null,
+	AuthorName varchar(100) not null,
+	Rating float,
+	ReviewerCount int,
+	DiscountPrice int not null,
+	OriginalPrice int not null,
+	BookDetail varchar(max) not null,
+	BookImage varchar(max) not null,
+	BookQuantity int not null 
 )
-as
-BEGIN
-	select 
-		w.WishListId,
-		w.BookId,
-		w.UserId,
-		b.BookName,
-		b.BookImage,
-		b.Author,
-		b.DiscountPrice,
-		b.ActualPrice		
-	from WishList w
-	inner join Books b
-	on w.BookId = b.BookId
-	where w.UserId = @UserId;
-END
-go 
 
-create procedure spRemoveFromWishList
-(
-	@WishListId int
-)
-as
-BEGIN 
-	delete from WishList where WishListId = @WishListId;
-END 
-go
+--select table--
+select * from Books
 
-create table Cart(
-	CartId int identity (1,1) primary key,
-	CartsQty int default 1,
-	UserId int not null foreign key (UserId) references UserRegistration(UserId),
+--stored procedure for Books--
+--add books--
+create procedure spAddbook(
+	@BookName varchar(100),
+	@AuthorName varchar(100),
+	@Rating float,
+	@ReviewerCount int,
+	@DiscountPrice int,
+	@OriginalPrice int,
+	@BookDetail varchar(max),
+	@BookImage varchar(max),
+	@BookQuantity int
+	)
+as
+begin
+	insert into Books
+	values(@BookName,@AuthorName,@Rating,@ReviewerCount,@DiscountPrice,@OriginalPrice,@BookDetail,@BookImage,@BookQuantity);
+end
+
+--Update book--
+create procedure spUpdateBook(
+	@BookId int,
+	@BookName varchar(100),
+	@AuthorName varchar(100),
+	@Rating float,
+	@ReviewerCount int,
+	@DiscountPrice int,
+	@OriginalPrice int,
+	@BookDetail varchar(max),
+	@BookImage varchar(max),
+	@BookQuantity int
+	)
+as 
+begin
+	update Books set 
+	BookName= @BookName,
+	AuthorName= @AuthorName,
+	Rating = @Rating,
+	ReviewerCount= @ReviewerCount,
+	DiscountPrice = @DiscountPrice,
+	OriginalPrice = @OriginalPrice,
+	BookDetail= @BookDetail,
+	BookImage = @BookImage,
+	BookQuantity = @BookQuantity
+	where BookId = @BookId;
+end
+		
+--Delete book--
+create procedure spDeleteBook(
+	@BookId int
+	)
+as
+begin
+	delete from Books where BookId=@BookId;
+end	
+
+--Get all books--
+create procedure spGetAllBooks
+as
+begin
+	select * from Books;
+end
+
+--Get book by id--
+create procedure spGetBookById(
+	@BookId int
+	)
+as
+begin
+	select * from Books where BookId=@BookId;
+end	
+
+create table Wishlist(
+	WishlistId int identity (1,1) primary key,
+	UserId int not null foreign key (UserId) references Users(UserId),
 	BookId int not null foreign key (BookId) references Books(BookId)
 	)
-go
 
-create procedure spAddToCart
-(
-    @CartsQty int,
-	@UserId int,
-	@BookId int
-)
-as
-BEGIN
-IF (NOT EXISTS(SELECT * FROM Cart WHERE BookId = @BookId and UserId=@UserId))
-		begin
-		insert into Cart
-		values(@CartsQty, @UserId, @BookId);
-		end
-end
-go
+--select table--
+select * from Wishlist;
 
-create procedure spRemoveFromCart
-(
-	@CartId int
-)
-as
-BEGIN
-	delete from Cart where CartId = @CartId;
-END
-
-go
-
-create procedure spGetAllCart
-(
+--stored procedure for wishlist--
+--add to wishlist--
+create procedure spAddToWishlist(
+	@BookId int,
 	@UserId int
-)
+	)
 as
-BEGIN
-	select 
-		c.CartId,
-		c.BookId,
-		c.UserId,
-		c.CartsQty,
-		b.BookName,
-		b.BookImage,
-		b.Author,
-		b.DiscountPrice,
-		b.ActualPrice,
-		b.Quantity
-	from Cart c
-	inner join Books b
-	on c.BookId = b.BookId
-	where c.UserId = @UserId;
-END
-go
+begin
+	if(not exists(select * from Wishlist where BookId=@BookId and UserId=@UserId))
+	begin
+		insert into Wishlist
+		values(@UserId,@BookId);
+	end
+end
 
-create procedure spUpdateQtyInCart
-(
-	@CartId int,
-	@CartsQty int
-)
+--remove from wishlist--
+create procedure spRemoveFromWishlist(
+	@WishlistId int
+	)
 as
-BEGIN
-	update Cart set CartsQty = @CartsQty where CartId = @CartId;
-END 
-go
+begin
+	delete from Wishlist where WishlistId = @WishlistId;
+end
+
+--get wishlist item--
+create procedure spGetAllWishlistItem(
+	@UserId int
+	)
+as
+begin
+	select wish.WishlistId,wish.BookId,wish.UserId,
+		book.BookName,book.BookImage,book.AuthorName,book.DiscountPrice,book.OriginalPrice		
+		from WishList wish inner join Books book
+		on wish.BookId = book.BookId
+		where wish.UserId = @UserId;
+end
+
+create table Cart(
+	CartId int identity(1,1) primary key,
+	BookInCart int default 1,
+	UserId int not null foreign key (UserId) references Users(UserId),
+	BookId int not null foreign key (BookId) references Books(BookId)
+)
+
+--select table--
+select * from Cart
+
+--stored procedure for cart--
+--Add to cart--
+create procedure spAddToCart(
+	@BookId int,
+	@BookInCart int,
+	@UserId int
+	)
+as
+begin
+	if(not exists(select * from Cart where BookId=@BookId and UserId=@UserId))
+	begin
+		insert into Cart(BookId,UserId)
+		values(@BookId,@UserId);
+	end
+end
+
+--update cart--
+create procedure spUpdateCart(
+	@CartId int,
+	@BookInCart int
+	)
+as
+begin
+	update Cart set BookInCart=@BookInCart where CartId=@CartId;
+end
+
+--remove from cart--
+create procedure spRemoveFromCart(
+	@CartId int
+	)
+as
+begin
+	delete from Cart where CartId=@CartId;
+end
+
+--get all cart items--
+create procedure spGetAllCartItem(
+	@UserId int
+	)
+as
+begin
+	select cart.CartId,cart.BookId,cart.BookInCart,cart.UserId,
+		book.BookName,book.BookImage,book.AuthorName,book.DiscountPrice,book.OriginalPrice from Cart cart inner join Books book 
+		on book.BookId=cart.BookId where cart.UserId = @UserId;
+end
+
+--Table for Address type--
 create table AddressType(
 	TypeId int identity(1,1) primary key,
 	AddType varchar(100)
@@ -342,7 +299,7 @@ create table Address(
 	City varchar(100) not null,
 	State varchar(100) not null,
 	TypeId int not null foreign key (TypeId) references AddressType(TypeId),
-	UserId int not null foreign key (UserId) references UserRegistration(UserId)
+	UserId int not null foreign key (UserId) references Users(UserId)
 	)
 
 --select table--
@@ -377,7 +334,52 @@ begin
 	update Address set
 	Address=@Address,City=@City,State=@State,TypeId=@TypeId where UserId=@UserId and AddressId=@AddressId;
 end
+--Table--
+create table Feedback(
+	FeedbackId int identity (1,1) primary key,
+	Rating float not null,
+	Comment varchar(max) not null,
+	BookId int not null foreign key (BookId) references Books(BookId),
+	UserId int not null foreign key (UserId) references Users(UserId)
+	)
 
+--select table--
+select * from Feedback
+
+--Stored procedures--
+--add feedback--
+create procedure spAddFeedback(
+	@Rating float,
+	@Comment varchar(max),
+	@BookId int,
+	@UserId int
+	)
+as
+	declare @TotalRating float;
+begin
+	if(not exists(select * from Feedback where BookId=@BookId and UserId=@UserId))
+	begin
+		insert into Feedback values(@Rating,@Comment,@BookId,@UserId);
+
+		select @TotalRating = avg(@Rating) from Books where BookId = @BookId;
+
+		Update Books set Rating = @TotalRating, ReviewerCount = (ReviewerCount+1) where BookId=@BookId;
+	end
+end
+
+--get feedback--
+create procedure spGetFeedback(
+	@BookId int
+	)
+as
+begin
+	select Feedback.FeedbackId,Feedback.Comment,Feedback.BookId,Feedback.Rating,Feedback.UserId,Users.FullName
+	from Users
+	inner join Feedback
+	on Feedback.UserId = Users.UserId where BookId=@BookId;
+end
+
+truncate table Feedback
 --get all address of user--
 create procedure spGetAllAddress(
 	@UserId int
@@ -387,25 +389,18 @@ begin
 	select * from Address where UserId=@UserId;
 end
 
-
-
-
-
-
+--order table--
 create table Orders(
 	OrderId int identity(1,1) primary key,
 	OrderQty int not null,
 	TotalPrice float not null,
 	OrderDate Date not null,
-	UserId INT NOT NULL FOREIGN KEY REFERENCES UserRegistration(UserId),
+	UserId INT NOT NULL FOREIGN KEY REFERENCES Users(UserId),
 	BookId INT NOT NULL FOREIGN KEY REFERENCES Books(BookId),
 	AddressId int not null FOREIGN KEY REFERENCES Address(AddressId)
 	)
-	select 
 
-
-
-select * from orders
+--select table--
 select * from Orders
 
 --stored procedures--
@@ -420,15 +415,15 @@ as
 	declare @OrderQty int;
 begin
 	set @TotalPrice = (select DiscountPrice from Books where BookId = @BookId); 
-	set @OrderQty = (select CartsQty from Cart where BookId = @BookId); 
+	set @OrderQty = (select BookInCart from Cart where BookId = @BookId); 
 	if(exists(select * from Books where BookId = @BookId))
 	begin
 		Begin try
 			Begin Transaction
-				if((select Quantity from Books where BookId = @BookId)>= @OrderQty)
+				if((select BookQuantity from Books where BookId = @BookId)>= @OrderQty)
 				begin
 					insert into Orders values(@OrderQty,@TotalPrice*@OrderQty,GETDATE(),@UserId,@BookId,@AddressId);
-					update Books set Quantity = (Quantity - @OrderQty) where BookId = @BookId;
+					update Books set BookQuantity = (BookQuantity - @OrderQty) where BookId = @BookId;
 					delete from Cart where BookId = @BookId and UserId = @UserId; 
 				end
 			commit Transaction
@@ -447,7 +442,7 @@ begin
 	select 
 		Orders.OrderId, Orders.UserId, Orders.AddressId, Books.BookId,
 		Orders.TotalPrice, Orders.OrderQty, Orders.OrderDate,
-		Books.BookName, Books.Author, Books.BookImage
+		Books.BookName, Books.AuthorName, Books.BookImage
 		from Books 
 		inner join Orders on Orders.BookId = Books.BookId 
 		where Orders.UserId = @UserId; 
@@ -459,48 +454,3 @@ as
 begin
 	delete from Orders where OrderId=@OrderId;
 end
-go
-
-go
-create table Feedback(
-	FeedbackId int identity (1,1) primary key,
-	Rating float not null,
-	Comment varchar(max) not null,
-	BookId int not null foreign key (BookId) references Books(BookId),
-	UserId int not null foreign key (UserId) references UserRegistration(UserId)
-	)
-
-go
-create procedure spAddFeedback
-(
-    @Rating float,
-	@Comment varchar(max),
-	@BookId int,
-	@UserId int
-)
-as
-BEGIN
-insert into Feedback
-values(@Rating, @Comment, @BookId, @UserId);
-END
-go
-
-create procedure spGetAllFeedback
-(
-	@BookId int
-)
-as
-BEGIN
-	SELECT Feedback.FeedbackId,
-		   Feedback.UserId,
-		   Feedback.BookId,
-		   Feedback.Comment,
-		   Feedback.Rating, 
-		   UserRegistration.FullName 
-	FROM UserRegistration 
-	INNER JOIN Feedback 
-	ON Feedback.UserId = UserRegistration.UserId WHERE BookId=@BookId
-
-END
-go
-delete  from Feedback where FeedbackId=1
