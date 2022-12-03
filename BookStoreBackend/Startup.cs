@@ -38,9 +38,27 @@ namespace BookStoreBackend
 
             services.AddControllers();
 
+            services.AddTransient<IUserBL, UserBL>();
+            services.AddTransient<IUserRL, UserRL>();
+            services.AddTransient<IAdminBL, AdminBL>();
+            services.AddTransient<IAdminRL, AdminRL>();
+            services.AddTransient<IBookBL, BookBL>();
+            services.AddTransient<IBookRL, BookRL>();
+            services.AddTransient<ICartBL, CartBL>();
+            services.AddTransient<ICartRL, CartRL>();
+            services.AddTransient<IWishlistBL, WishlistBL>();
+            services.AddTransient<IWishlistRL, WishlistRL>();
+            services.AddTransient<IAddressBL, AddressBL>();
+            services.AddTransient<IAddressRL, AddressRL>();
+            services.AddTransient<IOrderBL, OrderBL>();
+            services.AddTransient<IOrderRL, OrderRL>();
+            services.AddTransient<IFeedbackBL, FeedbackBL>();
+            services.AddTransient<IFeedbackRL, FeedbackRL>();
+
+
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Welcome to BookStore" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookStoreApplication" });
 
                 var securitySchema = new OpenApiSecurityScheme
                 {
@@ -57,41 +75,27 @@ namespace BookStoreBackend
                     Reference = new OpenApiReference
                     {
                         Type = ReferenceType.SecurityScheme,
-
                         Id = "Bearer"
                     }
                 };
+
                 c.AddSecurityDefinition("Bearer", securitySchema);
+
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
+
                 {
                     { securitySchema, new[] { "Bearer" } }
-
                 });
             });
-            services.AddTransient<IUserBL, UserBL>();
-            services.AddTransient<IUserRL, UserRL>();
-            services.AddTransient<IAdminBL, AdminBL>();
-            services.AddTransient<IAdminRL, AdminRL>();
-            services.AddTransient<IBookBL, BookBL>();
-            services.AddTransient<IBookRL, BookRL>();
-            services.AddTransient<ICartBL, CartBL>();
-            services.AddTransient<ICartRL, CartRL>();
-            services.AddTransient<IWishlistBL, WishlistBL>();
-            services.AddTransient<IWishlistRL, WishlistRL>();
-            services.AddTransient<IAddressBL, AddressBL>();
-            services.AddTransient<IAddressRL, AddressRL>();
-            services.AddTransient<IOrderBL, OrderBL>();
-            services.AddTransient<IOrderRL, OrderRL>();
-            services.AddTransient<IFeedBackBL, FeedBackBL>();
-            services.AddTransient<IFeedBackRL, FeedBackRL>();
 
-
+            //var jwtSection = Configuration.GetSection("Jwt:Key");
             services.AddAuthentication(option =>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+
                 option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
+
+            }).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -103,47 +107,40 @@ namespace BookStoreBackend
 
                     ValidateIssuerSigningKey = true,
 
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:SecKey"])) //Configuration["JwtToken:SecretKey"]
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:SecretKey"]))
+
                 };
 
             });
-            services.AddMemoryCache();
-            services.AddCors(options =>
-            {
-                options.AddPolicy(
-                name: "AllowOrigin",
-              builder => {
-                  builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-              });
-            });
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //Checks if the current host environment name is Microsoft.Extensions.Hosting.EnvironmentName.Development.
-            //
             if (env.IsDevelopment())
             {
-                //This middleware is used reports app runtime errors in development environment.
                 app.UseDeveloperExceptionPage();
+                // Swagger Configuration in API  
+                app.UseSwagger();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookStoreApplication");
+
+                });
             }
-            app.UseCors("AllowOrigin");
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("../swagger/v1/swagger.json", "BookStore");
-            });
-            //This middleware is used to redirects HTTP requests to HTTPS.
+
             app.UseHttpsRedirection();
-            //This middleware is used to route requests. 
+
+            app.UseCors(x => x
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+
             app.UseRouting();
-            //This middleware is used to authorizes a user to access secure resources. 
-            app.UseAuthorization();
+
             app.UseAuthentication();
-            //This middleware is used to add Controller endpoints to the request pipeline.
+            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

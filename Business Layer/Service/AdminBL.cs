@@ -15,19 +15,17 @@ namespace Business_Layer.Service
             this.adminRL = adminRL;
         }
 
-        public string AdminLogin(LoginModel login)
+        public AdminModel AdminLogin(AdminLoginModel user)
         {
             try
             {
-                return this.adminRL.AdminLogin(login);
-
+                return adminRL.AdminLogin(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-
     }
 }

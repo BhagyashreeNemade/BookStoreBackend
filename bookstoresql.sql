@@ -1,6 +1,8 @@
 create database BookStore
 
 use BookStore
+drop table UserRegistration
+
 create table UserRegistration(
 UserId int not null identity(1,1) primary key,
 FullName varchar(50),
@@ -44,8 +46,26 @@ begin
      select * from UserRegistration where (Email = @email and Password = @password)
 end
 go
+select * from Users
+go
+CREATE PROCEDURE ForgotPassword
+(
+@EmailId varchar(180)
+)
+As
+Begin
+	Select * from UserRegistration where Email=@EmailId
+End;
 
-create proc ForgotPassword
+go
+
+CREATE PROCEDURE SP_ResetPassword @EmailId VARCHAR(100), @Password VARCHAR (100)
+AS
+BEGIN
+UPDATE UserRegistration
+SET Password= @Password where EmailId=@EmailId
+END
+drop procedure ForgotPassword
 
 (
 @EmailId varchar(50)
@@ -55,9 +75,16 @@ as
 begin 
      update UserRegistration set Password=null where Email=@EmailId
 end 
+drop procedure Reset_Password
+GO
+CREATE PROCEDURE [dbo].[Reset_Password] @Email VARCHAR(100), @Password VARCHAR (100)
+AS
+BEGIN
+UPDATE UserRegistration SET Password = @Password WHERE Email = @Email
+END
 go
 
-create proc spResetPassword
+create procedure spResetPassword
 
 (
 @EmailId varchar(50),
@@ -294,174 +321,150 @@ BEGIN
 	update Cart set CartsQty = @CartsQty where CartId = @CartId;
 END 
 go
-
 create table AddressType(
-	TypeId int identity (1,1) primary key,
-	Type varchar(200)
+	TypeId int identity(1,1) primary key,
+	AddType varchar(100)
 	)
 
-insert into AddressType values ('Home');
-insert into AddressType values ('Work');
-insert into AddressType values ('Others');
+--adding types--
+insert into AddressType values('Home');
+insert into AddressType values('Work');
+insert into AddressType values('Other');
 
+--select table--
+select * from AddressType;
 
-create table AddressTable(
-	AddressId int identity (1,1) primary key,
-	Address varchar(200) not null,
-	City varchar(200) not null,
-	State varchar(200) not null,
+--table for Address info--
+
+create table Address(
+	AddressId int identity(1,1) primary key,
+	Address varchar(max) not null,
+	City varchar(100) not null,
+	State varchar(100) not null,
 	TypeId int not null foreign key (TypeId) references AddressType(TypeId),
 	UserId int not null foreign key (UserId) references UserRegistration(UserId)
 	)
 
-go	
-create procedure spAddAddress
-(
-    @Address varchar(200),
-	@City varchar(200),
-	@State varchar(200),
+--select table--
+select * from Address;
+
+--stored procedure for address--
+--add address--
+create procedure spAddAddress(
+	@Address varchar(max),
+	@City varchar(100),
+	@State varchar(100),
 	@TypeId int,
 	@UserId int
-)
+	)
 as
-BEGIN 
-	insert into AddressTable
-	values(@Address, @City, @State, @TypeId, @UserId);
-END
-go
-
-create procedure spDeleteAddress
-(
-	@AddressId int,
-	@UserId int
-)
-as
-BEGIN
-	delete from AddressTable where AddressId = @AddressId and UserId = @UserId;
-END
-go 
-
-go
-
-
-create procedure spUpdateAddress
-(
-@AddressId int,
-@Address varchar(300),
-@City varchar(250),
-@State varchar(250),
-@TypeId int,
-@UserId int
-)
-as
-BEGIN
-Update AddressTable set
-Address = @Address, City = @City,
-State = @State , TypeId = @TypeId,UserId=@UserId
-where AddressId = @AddressId
+begin
+	insert into Address
+	values(@Address,@City,@State,@TypeId,@UserId);
 end
-go
-create procedure spGetAllAddress
-(
+
+--update address--
+create procedure spUpdateAddress(
+	@AddressId int,
+	@Address varchar(max),
+	@City varchar(100),
+	@State varchar(100),
+	@TypeId int,
 	@UserId int
-)
+	)
 as
-BEGIN 
-	select*from AddressTable where UserId=@UserId
-	
-	
-END
-go
+begin
+	update Address set
+	Address=@Address,City=@City,State=@State,TypeId=@TypeId where UserId=@UserId and AddressId=@AddressId;
+end
+
+--get all address of user--
+create procedure spGetAllAddress(
+	@UserId int
+	)
+as
+begin
+	select * from Address where UserId=@UserId;
+end
 
 
 
-create table Orders
-(
-         OrdersId int not null identity (1,1) primary key,
-		 UserId INT NOT NULL,
-		 FOREIGN KEY (UserId) REFERENCES UserRegistration(UserId),
-		 AddressId int
-		 FOREIGN KEY (AddressId) REFERENCES AddressTable(AddressId),
-	     BookId INT NOT NULL
-		 FOREIGN KEY (BookId) REFERENCES Books(BookId),
-		 TotalPrice int,
-		 BookQuantity int,
-		 OrderDate Date
-);
+
+
+
+create table Orders(
+	OrderId int identity(1,1) primary key,
+	OrderQty int not null,
+	TotalPrice float not null,
+	OrderDate Date not null,
+	UserId INT NOT NULL FOREIGN KEY REFERENCES UserRegistration(UserId),
+	BookId INT NOT NULL FOREIGN KEY REFERENCES Books(BookId),
+	AddressId int not null FOREIGN KEY REFERENCES Address(AddressId)
+	)
+	select 
+
+
 
 select * from orders
-go
-create PROC sp_AddingOrders
-	@UserId INT,
-	@AddressId int,
-	@BookId INT ,
-	@BookQuantity int
-AS
-	Declare @TotPrice int
-BEGIN
-	Select @TotPrice=DiscountPrice from Books where BookId = @BookId;
-	IF (EXISTS(SELECT * FROM Books WHERE BookId = @BookId))
+select * from Orders
+
+--stored procedures--
+--add order--
+create procedure spAddOrder(
+	@UserId int,
+	@BookId int,
+	@AddressId int
+	)
+as
+	declare @TotalPrice int;
+	declare @OrderQty int;
+begin
+	set @TotalPrice = (select DiscountPrice from Books where BookId = @BookId); 
+	set @OrderQty = (select CartsQty from Cart where BookId = @BookId); 
+	if(exists(select * from Books where BookId = @BookId))
 	begin
-		IF (EXISTS(SELECT * FROM UserRegistration WHERE UserId = @UserId))
-		Begin
 		Begin try
-			Begin transaction			
-				INSERT INTO Orders(UserId,AddressId,BookId,TotalPrice,BookQuantity,OrderDate)
-				VALUES ( @UserId,@AddressId,@BookId,@BookQuantity*@TotPrice,@BookQuantity,GETDATE())
-				Update Books set Quantity=Quantity-@BookQuantity
-				Delete from Cart where BookId = @BookId and UserId = @UserId
+			Begin Transaction
+				if((select Quantity from Books where BookId = @BookId)>= @OrderQty)
+				begin
+					insert into Orders values(@OrderQty,@TotalPrice*@OrderQty,GETDATE(),@UserId,@BookId,@AddressId);
+					update Books set Quantity = (Quantity - @OrderQty) where BookId = @BookId;
+					delete from Cart where BookId = @BookId and UserId = @UserId; 
+				end
 			commit Transaction
 		End try
-		Begin catch
-			Rollback transaction
-		End catch
-		end
-		Else
-		begin
-			Select 1
-		end
-	end 
-	Else
-	begin
-			Select 2
-	end	
-END
 
-go
-create PROC sp_GetAllOrders
-	@UserId INT
-AS
-BEGIN
-	select 
-		Books.BookId,Books.BookName,Books.Author,Books.DiscountPrice,Books.ActualPrice,Books.BookDetail,Books.BookImage,Orders.OrdersId,Orders.OrderDate
-		FROM Books
-		inner join Orders
-		on Orders.BookId=Books.BookId where Orders.UserId=@UserId
-END
-go
-create procedure spRemoveFromOrder
-(
-	@OrdersId int,
-	@UserId int
-
-)
-as
-declare @BookQuantity int,
-		@Bookid int
-begin
-		if(exists(select*from Orders where OrdersId=@OrdersId))
-			begin
-			select @Bookid=BookId from Orders where OrdersId=@OrdersId and UserId=@UserId
-			select @BookQuantity=BookQuantity from Orders where OrdersId=@OrdersId and UserId=@UserId
-			update Books set Quantity=Quantity+@BookQuantity where BookId=@Bookid 
-			delete from Orders where OrdersId=@OrdersId
-			end
+		Begin Catch
+				rollback;
+		End Catch
+	end
 end
+
+--get all orders--
+create procedure spGetAllOrders(@UserId int)
+as
+begin
+	select 
+		Orders.OrderId, Orders.UserId, Orders.AddressId, Books.BookId,
+		Orders.TotalPrice, Orders.OrderQty, Orders.OrderDate,
+		Books.BookName, Books.Author, Books.BookImage
+		from Books 
+		inner join Orders on Orders.BookId = Books.BookId 
+		where Orders.UserId = @UserId; 
+end
+
+--delete order--
+create procedure spRemoveOrder(@OrderId int)
+as
+begin
+	delete from Orders where OrderId=@OrderId;
+end
+go
 
 go
 create table Feedback(
 	FeedbackId int identity (1,1) primary key,
-	Rating int not null,
+	Rating float not null,
 	Comment varchar(max) not null,
 	BookId int not null foreign key (BookId) references Books(BookId),
 	UserId int not null foreign key (UserId) references UserRegistration(UserId)
@@ -470,7 +473,7 @@ create table Feedback(
 go
 create procedure spAddFeedback
 (
-    @Rating int,
+    @Rating float,
 	@Comment varchar(max),
 	@BookId int,
 	@UserId int
@@ -500,3 +503,4 @@ BEGIN
 
 END
 go
+delete  from Feedback where FeedbackId=1

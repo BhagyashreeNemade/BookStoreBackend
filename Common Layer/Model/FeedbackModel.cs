@@ -5,10 +5,10 @@ using System.Text;
 namespace Common_Layer.Model
 {
 
-    public class FeedbackResponse
+    public class FeedbackModel
     {
         public int FeedbackId { get; set; }
-        public int Rating { get; set; }
+        public double Rating { get; set; }
         public string Comment { get; set; }
         public int BookId { get; set; }
         public int UserId { get; set; }

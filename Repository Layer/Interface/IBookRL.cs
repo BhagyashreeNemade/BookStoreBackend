@@ -7,10 +7,10 @@ namespace Repository_Layer.Interface
 {
     public interface IBookRL
     {
-        public BookModel AddBook(AddBook addBook);
+        public BookModel AddBook(BookModel book);
+        public BookModel UpdateBook(BookModel book);
+        public bool DeleteBook(int bookId);
         public List<BookModel> GetAllBooks();
         public BookModel GetBookById(int bookId);
-        public string DeleteBook(int bookId);
-        public BookModel UpdateBook(BookModel updateBook);
     }
 }

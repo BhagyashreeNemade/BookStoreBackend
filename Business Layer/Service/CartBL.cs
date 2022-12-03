@@ -1,6 +1,7 @@
 ﻿using Business_Layer.Interface;
 using Common_Layer.Model;
 using Repository_Layer.Interface;
+using Repository_Layer.Service;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,21 +16,52 @@ namespace Business_Layer.Service
         {
             this.cartRL = cartRL;
         }
-        public AddToCart AddToCart(AddToCart addCart, int userId)
+
+        public AddToCartModel AddToCart(AddToCartModel cart, int userId)
         {
-            return this.cartRL.AddToCart(addCart, userId);
+            try
+            {
+                return cartRL.AddToCart(cart, userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public string RemoveFromCart(int cartId)
+        public string UpdateCart(int cartId, int bookQty)
         {
-            return this.cartRL.RemoveFromCart(cartId);
+            try
+            {
+                return cartRL.UpdateCart(cartId, bookQty);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public List<CartResponse> GetAllCart(int userId)
+
+        public bool RemoveFromCart(int cartId)
         {
-            return this.cartRL.GetAllCart(userId);
+            try
+            {
+                return cartRL.RemoveFromCart(cartId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public string UpdateQtyInCart(int cartId, int bookQty, int userId)
+
+        public List<CartModel> GetCartItem(int userId)
         {
-            return this.cartRL.UpdateQtyInCart(cartId, bookQty, userId);
+            try
+            {
+                return cartRL.GetCartItem(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Business_Layer.Interface
 {
-    public interface IFeedBackBL
+    public interface IFeedbackBL
     {
-        public AddFeedback AddFeedback(AddFeedback addFeedback, int userId);
-        public List<FeedbackResponse> GetAllFeedbacks(int bookId);
+        public string AddFeedback(AddFeedbackModel feedback, int userId);
+        public List<FeedbackModel> GetFeedback(int bookId);
 
 
     }

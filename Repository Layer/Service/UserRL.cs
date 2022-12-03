@@ -15,178 +15,193 @@ namespace Repository_Layer.Service
 {
     public class UserRL : IUserRL
     {
-        SqlConnection sqlConnection;
-        private readonly IConfiguration configuration;
+        public IConfiguration Configuration { get; }
+
         public UserRL(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            Configuration = configuration;
         }
 
-        public RegistrationModel AddUser(RegistrationModel usermodel)
+        public UserRegisterModel Register(UserRegisterModel user)
         {
-            this.sqlConnection = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (sqlConnection)
-                try
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
+            {
+                SqlCommand command = new SqlCommand("spRegister", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                var encrypted = EncryptPasswordBase64(user.Password);
+
+                command.Parameters.AddWithValue("@FullName", user.FullName);
+                command.Parameters.AddWithValue("@EmailId", user.EmailId);
+                command.Parameters.AddWithValue("@Password", encrypted);
+                command.Parameters.AddWithValue("@MobileNumber", user.MobileNumber);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result == 1)
                 {
-
-                    SqlCommand command = new SqlCommand("spAddUser", this.sqlConnection);
-                    command.CommandType = CommandType.StoredProcedure;
-                    this.sqlConnection.Open();
-
-                    command.Parameters.AddWithValue("@fullname", usermodel.FullName);
-                    command.Parameters.AddWithValue("@email", usermodel.Email);
-                    command.Parameters.AddWithValue("@password", usermodel.Password);
-                    command.Parameters.AddWithValue("@mobilenumber", usermodel.Mobile_Number);
-                    var result = command.ExecuteNonQuery();
-
-                    if (result != 0)
-                    {
-                        return usermodel;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return user;
                 }
-                catch (Exception e)
+                else
                 {
-                    throw e;
+                    return null;
                 }
-                finally
-                {
-                    this.sqlConnection.Close();
-                }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public string UserLogin(LoginModel login)
+
+        public LoginResponseModel Login(LoginModel user)
         {
-            this.sqlConnection = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (sqlConnection)
-                try
+            LoginResponseModel loginResponse = new LoginResponseModel();
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
+            {
+                SqlCommand command = new SqlCommand("spLogin", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@EmailId", user.EmailId);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
                 {
-                    RegistrationModel registrationmodel = new RegistrationModel();
-                    SqlCommand command = new SqlCommand("spUserLogin", this.sqlConnection);
-                    command.CommandType = CommandType.StoredProcedure;
-                    this.sqlConnection.Open();
-
-                    command.Parameters.AddWithValue("@email", login.Email);
-                    command.Parameters.AddWithValue("@password", login.Password);
-                    SqlDataReader data = command.ExecuteReader();
-                    if (data.HasRows)
+                    while (reader.Read())
                     {
-                        int UserId = 0;
-
-                        while (data.Read())
+                        loginResponse.UserId = Convert.ToInt32(reader["UserId"] == DBNull.Value ? default : reader["UserId"]);
+                        var password = Convert.ToString(reader["Password"] == DBNull.Value ? default : reader["Password"]);
+                        loginResponse.FullName = Convert.ToString(reader["FullName"] == DBNull.Value ? default : reader["FullName"]);
+                        loginResponse.EmailId = Convert.ToString(reader["EmailId"] == DBNull.Value ? default : reader["EmailId"]);
+                        loginResponse.MobileNumber = Convert.ToInt64(reader["MobileNumber"] == DBNull.Value ? default : reader["MobileNumber"]);
+                        var decrypted = DecryptPasswordBase64(password);
+                        if (decrypted == user.Password)
                         {
-                            login.Email = Convert.ToString(data["Email"]);
-                            login.Password = Convert.ToString(data["Password"]);
-                            UserId = Convert.ToInt32(data["UserId"]);
+                            loginResponse.token = JwtMethod(loginResponse.EmailId, loginResponse.UserId);
+                            return loginResponse;
                         }
-                        string token = GenerateSecurityToken(login.Email, UserId);
-                        return token;
-                    }
-                    else
-                    {
-                        return null;
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    throw e;
+                    connection.Close();
+                    return null;
                 }
-                finally { this.sqlConnection.Close(); }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return default;
         }
 
-        private string GenerateSecurityToken(string Email, int UserId)
+        public string JwtMethod(string emailID, long userId)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.configuration["Jwt:SecKey"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claims = new[] {
-                new Claim(ClaimTypes.Role,"User"),
-                new Claim(ClaimTypes.Email,Email),
-                new Claim("UserId",UserId.ToString())
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var tokenKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration[("Jwt:Secretkey")]));
+
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(
+                new Claim[]
+                {
+                        new Claim(ClaimTypes.Role, "User"),
+                        new Claim(ClaimTypes.Email, emailID),
+                        new Claim("UserId", userId.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(60),
+                SigningCredentials = new SigningCredentials(tokenKey, SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = new JwtSecurityToken(this.configuration["Jwt:Issuer"],
-              this.configuration["Jwt:Issuer"],
-              claims,
-              expires: DateTime.Now.AddMinutes(60),
-              signingCredentials: credentials);
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
+            return tokenHandler.WriteToken(token);
         }
-        public string ForgetPassword(string Email)
+
+        public string ForgotPassword(string emailId)
         {
-            this.sqlConnection = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (sqlConnection)
+
+            using (SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]))
+            {
                 try
                 {
-                    SqlCommand command = new SqlCommand("ForgotPassword", this.sqlConnection);
+                    SqlCommand command = new SqlCommand("spForget", connection);
                     command.CommandType = CommandType.StoredProcedure;
-                    this.sqlConnection.Open();
 
-                    command.Parameters.AddWithValue("@EmailId", Email);
+                    command.Parameters.AddWithValue("@EmailId", emailId);
+
+                    connection.Open();
                     SqlDataReader reader = command.ExecuteReader();
-                    if (reader.RecordsAffected != 0)
+
+                    if (reader.HasRows)
                     {
-                        int userId = 0;
                         while (reader.Read())
                         {
-                            Email = Convert.ToString(reader["Email"]);
-                            userId = Convert.ToInt32(reader["UserId"]);
-
+                            var userId = Convert.ToInt32(reader["UserId"] == DBNull.Value ? default : reader["UserId"]);
+                            var token = JwtMethod(emailId, userId);
+                            MSMQModel msmq_Model = new MSMQModel();
+                            msmq_Model.sendData2Queue($"http://localhost:4200/resetpassword/{token}");
+                            return $"http://localhost:4200/resetpassword/{token}";
                         }
-                        this.sqlConnection.Close();
-                        var token = GenerateSecurityToken(Email, userId);
-                        MSMQModel mSMQModel = new MSMQModel();
-                        mSMQModel.sendData2Queue(token);
-                        return token.ToString();
                     }
                     else
-                    {
-                        return null;
-                    }
-
+                    { return null; }
+                    connection.Close();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
-                    throw;
+                    throw new Exception(ex.Message);
                 }
-
-
+            }
+            return default;
         }
-        public bool ResetPassword(string EmailId, string Password)
+
+        public static string EncryptPasswordBase64(string password)
         {
-
-            this.sqlConnection = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (sqlConnection)
-                try
-                {
-                    RegistrationModel usermodel = new RegistrationModel();
-                    SqlCommand command = new SqlCommand("spResetPassword", this.sqlConnection);
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    command.Parameters.AddWithValue("@EmailId", EmailId);
-                    command.Parameters.AddWithValue("@Password", Password);
-                    this.sqlConnection.Open();
-                    var result = command.ExecuteNonQuery();
-                    this.sqlConnection.Close();
-                    if (result != 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(password);
+            return System.Convert.ToBase64String(plainTextBytes);
         }
 
+        public static string DecryptPasswordBase64(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
+        public string ResetPassword(ResetPasswordModel user)
+        {
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
+            {
+                SqlCommand command = new SqlCommand("spResetPassword", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                var encryptedPassword = EncryptPasswordBase64(user.Password);
+
+                command.Parameters.AddWithValue("@EmailId", user.EmailId);
+                command.Parameters.AddWithValue("@Password", encryptedPassword);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
+                {
+                    return "Password Updated";
+                }
+                else
+                {
+                    return "Failed to update password";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

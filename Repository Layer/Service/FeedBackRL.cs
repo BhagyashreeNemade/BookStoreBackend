@@ -9,93 +9,85 @@ using System.Text;
 
 namespace Repository_Layer.Service
 {
-    public class FeedBackRL : IFeedBackRL
+    public class FeedbackRL : IFeedbackRL
     {
-        private readonly IConfiguration configuration;
-        SqlConnection con;
-        public FeedBackRL(IConfiguration configuration)
+        public IConfiguration Configuration { get; }
+
+        public FeedbackRL(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            this.Configuration = configuration;
         }
-        public AddFeedback AddFeedback(AddFeedback addFeedback, int userId)
+
+        public string AddFeedback(AddFeedbackModel feedback, int userId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spAddFeedback", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@Rating", feedback.Rating);
+                command.Parameters.AddWithValue("@Comment", feedback.Comment);
+                command.Parameters.AddWithValue("@BookId", feedback.BookId);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result == 2)
                 {
-                    SqlCommand cmd = new SqlCommand("spAddFeedback", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@Rating", addFeedback.Rating);
-                    cmd.Parameters.AddWithValue("@Comment", addFeedback.Comment);
-                    cmd.Parameters.AddWithValue("@BookId", addFeedback.BookId);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    var result = Convert.ToInt32(cmd.ExecuteScalar());
-                    con.Close();
-
-                    if (result != 1)
-                    {
-                        return addFeedback;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return "Feedback added";
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return null;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
-        public List<FeedbackResponse> GetAllFeedbacks(int bookId)
+        public List<FeedbackModel> GetFeedback(int bookId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                List<FeedbackModel> feedbackList = new List<FeedbackModel>();
+                SqlCommand command = new SqlCommand("spGetFeedback", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookId", bookId);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
                 {
-                    List<FeedbackResponse> feedbackResponse = new List<FeedbackResponse>();
-                    SqlCommand cmd = new SqlCommand("spGetAllFeedback", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@BookId", bookId);
-
-                    con.Open();
-                    SqlDataReader rdr = cmd.ExecuteReader();
-
-                    if (rdr.HasRows)
+                    while (reader.Read())
                     {
-                        while (rdr.Read())
-                        {
-                            FeedbackResponse feedback = new FeedbackResponse();
-                            feedback.FeedbackId = Convert.ToInt32(rdr["FeedbackId"]);
-                            feedback.BookId = Convert.ToInt32(rdr["BookId"]);
-                            feedback.UserId = Convert.ToInt32(rdr["UserId"]);
-                            feedback.Comment = Convert.ToString(rdr["Comment"]);
-                            feedback.Rating = Convert.ToInt32(rdr["Rating"]);
-                            feedback.FullName = Convert.ToString(rdr["FullName"]);
-                            feedbackResponse.Add(feedback);
-                        }
-                        con.Close();
-                        return feedbackResponse;
+                        FeedbackModel feedback = new FeedbackModel();
+                        feedback.FeedbackId = Convert.ToInt32(reader["FeedbackId"] == DBNull.Value ? default : reader["FeedbackId"]);
+                        feedback.BookId = Convert.ToInt32(reader["BookId"] == DBNull.Value ? default : reader["BookId"]);
+                        feedback.UserId = Convert.ToInt32(reader["UserId"] == DBNull.Value ? default : reader["UserId"]);
+                        feedback.Comment = Convert.ToString(reader["Comment"] == DBNull.Value ? default : reader["Comment"]);
+                        feedback.Rating = Convert.ToDouble(reader["Rating"] == DBNull.Value ? default : reader["Rating"]);
+                        feedback.FullName = Convert.ToString(reader["FullName"] == DBNull.Value ? default : reader["FullName"]);
+                        feedbackList.Add(feedback);
                     }
-                    else
-                    {
-                        con.Close();
-                        return null;
-                    }
+                    return feedbackList;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    connection.Close();
+                    return null;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

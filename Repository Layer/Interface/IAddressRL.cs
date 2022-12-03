@@ -7,11 +7,9 @@ namespace Repository_Layer.Interface
 {
     public interface IAddressRL
     {
-        public AddAddress AddAddress(AddAddress addAddress, int userId);
-        public AddressModel UpdateAddress(AddressModel addressModel, int userId);
-        public string DeleteAddress(int addressId, int userId);
-        public List<AddressModel> GetAllAddresses(int userId);
-
+        public string AddAddress(AddressModel address, int userId);
+        public AddressModel UpdateAddress(AddressModel address, int userId);
+        public List<AddressModel> GetAllAddress(int userId);
 
     }
 }

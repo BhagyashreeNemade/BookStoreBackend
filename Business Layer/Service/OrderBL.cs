@@ -10,43 +10,46 @@ namespace Business_Layer.Service
 {
     public class OrderBL : IOrderBL
     {
-        IOrderRL orderRL;
+        private readonly IOrderRL orderRL;
         public OrderBL(IOrderRL orderRL)
         {
             this.orderRL = orderRL;
         }
 
-        public string AddOrder(OrderModel order)
+        public string PlaceOrder(PlaceOrderModel order, int userId)
         {
             try
             {
-                return this.orderRL.AddOrder(order);
+                return orderRL.PlaceOrder(order, userId);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
             }
         }
-
-        public List<GetOrderModel> AllOrderDetails(int UserId)
+        public List<OrderModel> GetAllOrders(int userId)
         {
             try
             {
-                return this.orderRL.AllOrderDetails(UserId);
+                return orderRL.GetAllOrders(userId);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
             }
         }
 
-
-
-        public string DeleteOrder(int OrderId, int userId)
+        public bool RemoveOrder(int orderId)
         {
-            return orderRL.DeleteOrder(OrderId, userId);
+            try
+            {
+                return orderRL.RemoveOrder(orderId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-
 
     }
 }

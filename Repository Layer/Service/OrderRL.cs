@@ -11,144 +11,115 @@ namespace Repository_Layer.Service
 {
     public class OrderRL : IOrderRL
     {
-        private SqlConnection sqlConnection;
         public IConfiguration Configuration { get; }
+
         public OrderRL(IConfiguration configuration)
         {
             this.Configuration = configuration;
         }
 
-        public string AddOrder(OrderModel order)
+        public string PlaceOrder(PlaceOrderModel order, int userId)
         {
-            sqlConnection = new SqlConnection(this.Configuration.GetConnectionString("BookStore"));
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
             try
             {
-                using (sqlConnection)
+                SqlCommand command = new SqlCommand("spAddOrder", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@AddressId", order.AddressId);
+                command.Parameters.AddWithValue("@BookId", order.BookId);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result == 3)
                 {
-                    string storeprocedure = "sp_AddingOrders";
-                    SqlCommand sqlCommand = new SqlCommand(storeprocedure, sqlConnection);
-                    sqlCommand.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    sqlCommand.Parameters.AddWithValue("@UserId", order.UserId);
-                    sqlCommand.Parameters.AddWithValue("@AddressId", order.AddressId);
-                    sqlCommand.Parameters.AddWithValue("@BookId", order.BookId);
-                    sqlCommand.Parameters.AddWithValue("@BookQuantity", order.BookQuantity);
-
-                    sqlConnection.Open();
-                    int result = Convert.ToInt32(sqlCommand.ExecuteScalar());
-                    if (result == 2)
-                    {
-                        return "BookId not exists";
-                    }
-                    else if (result == 1)
-                    {
-                        return "UserId not exists";
-                    }
-                    else
-                    {
-                        return "Ordered successfully";
-                    }
+                    return "Order Placed";
+                }
+                else
+                {
+                    return null;
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
             }
-            finally
+        }
+        public List<OrderModel> GetAllOrders(int userId)
+        {
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                sqlConnection.Close();
+                List<OrderModel> orderList = new List<OrderModel>();
+                SqlCommand command = new SqlCommand("spGetAllOrders", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        OrderModel order = new OrderModel();
+                        order.OrderId = Convert.ToInt32(reader["OrderId"] == DBNull.Value ? default : reader["OrderId"]);
+                        order.BookId = Convert.ToInt32(reader["BookId"] == DBNull.Value ? default : reader["BookId"]);
+                        order.UserId = Convert.ToInt32(reader["UserId"] == DBNull.Value ? default : reader["UserId"]);
+                        order.AddressId = Convert.ToInt32(reader["AddressId"] == DBNull.Value ? default : reader["AddressId"]);
+                        order.TotalPrice = Convert.ToDouble(reader["TotalPrice"] == DBNull.Value ? default : reader["TotalPrice"]);
+                        order.OrderQty = Convert.ToInt32(reader["OrderQty"] == DBNull.Value ? default : reader["OrderQty"]);
+                        order.OrderDate = Convert.ToDateTime(reader["OrderDate"] == DBNull.Value ? default : reader["OrderDate"]);
+                        order.BookName = Convert.ToString(reader["BookName"] == DBNull.Value ? default : reader["BookName"]);
+                        order.AuthorName = Convert.ToString(reader["AuthorName"] == DBNull.Value ? default : reader["AuthorName"]);
+                        order.BookImage = Convert.ToString(reader["BookImage"] == DBNull.Value ? default : reader["BookImage"]);
+                        orderList.Add(order);
+                    }
+                    return orderList;
+                }
+                else
+                {
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
-        public List<GetOrderModel> AllOrderDetails(int userId)
+        public bool RemoveOrder(int orderId)
         {
-            sqlConnection = new SqlConnection(this.Configuration.GetConnectionString("BookStore"));
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
             try
             {
-                using (sqlConnection)
-                {
-                    string storeprocedure = "sp_GetAllOrders";
-                    SqlCommand sqlCommand = new SqlCommand(storeprocedure, sqlConnection);
-                    sqlCommand.CommandType = System.Data.CommandType.StoredProcedure;
+                SqlCommand command = new SqlCommand("spRemoveOrder", connection);
+                command.CommandType = CommandType.StoredProcedure;
 
-                    sqlCommand.Parameters.AddWithValue("@UserId", userId);
-                    sqlConnection.Open();
-                    SqlDataReader sqlData = sqlCommand.ExecuteReader();
-                    List<GetOrderModel> order = new List<GetOrderModel>();
-                    if (sqlData.HasRows)
-                    {
-                        while (sqlData.Read())
-                        {
-                            GetOrderModel orderModel = new GetOrderModel();
-                            BookGetOrderModel getbookModel = new BookGetOrderModel();
-                            getbookModel.BookId = Convert.ToInt32(sqlData["BookId"]);
-                            getbookModel.BookName = sqlData["BookName"].ToString();
-                            getbookModel.Author = sqlData["Author"].ToString();
-                            getbookModel.DiscountPrice = Convert.ToInt32(sqlData["DiscountPrice"]);
-                            getbookModel.ActualPrice = Convert.ToInt32(sqlData["ActualPrice"]);
-                            getbookModel.BookDetail = sqlData["BookDetail"].ToString();
-                            getbookModel.BookImage = sqlData["BookImage"].ToString();
-                            orderModel.OrderId = Convert.ToInt32(sqlData["OrdersId"]);
-                            //orderModel.UserId = Convert.ToInt32(sqlData["UserId"]);
-                            //orderModel.AddressId = Convert.ToInt32(sqlData["AddressId"]);
-                            //orderModel.BookId = Convert.ToInt32(sqlData["BookId"]);
-                            //orderModel.BookQuantity = Convert.ToInt32(sqlData["BookQuantity"]);
-                            orderModel.OrderDate = sqlData["OrderDate"].ToString();
-                            orderModel.getbookModel = getbookModel;
-                            order.Add(orderModel);
-                        }
-                        return order;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                command.Parameters.AddWithValue("@OrderId", orderId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
-            catch (ArgumentNullException e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
             }
-            finally
-            {
-                sqlConnection.Close();
-            }
-        }
-
-        public string DeleteOrder(int OrdersId, int userId)
-        {
-            this.sqlConnection = new SqlConnection(this.Configuration.GetConnectionString("BookStore"));
-            using (sqlConnection)
-            {
-                try
-                {
-                    SqlCommand cmd = new SqlCommand("spRemoveFromOrder", sqlConnection);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@OrdersId", OrdersId);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-
-                    sqlConnection.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    sqlConnection.Close();
-
-                    if (result != 0)
-                    {
-                        return "Order Deleted Successfully";
-                    }
-                    else
-                    {
-                        return "Failed to Delete the Order";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-
-            }
-
         }
     }
 }

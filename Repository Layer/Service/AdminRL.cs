@@ -14,69 +14,75 @@ namespace Repository_Layer.Service
 {
     public class AdminRL : IAdminRL
     {
-        SqlConnection sqlConnection;
-        private readonly IConfiguration configuration;
+        public IConfiguration Configuration { get; }
+
         public AdminRL(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            this.Configuration = configuration;
         }
 
-        public string AdminLogin(LoginModel login)
+        public AdminModel AdminLogin(AdminLoginModel admin)
         {
-            this.sqlConnection = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (sqlConnection)
-                try
+            AdminModel adminRes = new AdminModel();
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
+            {
+                SqlCommand command = new SqlCommand("spAdminLogin", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@EmailId", admin.EmailId);
+                command.Parameters.AddWithValue("@Password", admin.Password);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
                 {
-                    SqlCommand command = new SqlCommand("spAdminLogin", this.sqlConnection);
-                    command.CommandType = CommandType.StoredProcedure;
-                    this.sqlConnection.Open();
-
-                    command.Parameters.AddWithValue("@email", login.Email);
-                    command.Parameters.AddWithValue("@password", login.Password);
-                    SqlDataReader data = command.ExecuteReader();
-                    if (data.HasRows)
+                    while (reader.Read())
                     {
-                        int AdminId = 0;
+                        adminRes.AdminId = Convert.ToInt32(reader["AdminId"] == DBNull.Value ? default : reader["AdminId"]);
+                        adminRes.FullName = Convert.ToString(reader["FullName"] == DBNull.Value ? default : reader["FullName"]);
+                        adminRes.EmailId = Convert.ToString(reader["EmailId"] == DBNull.Value ? default : reader["EmailId"]);
+                        adminRes.MobileNumber = Convert.ToInt64(reader["MobileNumber"] == DBNull.Value ? default : reader["MobileNumber"]);
 
-                        while (data.Read())
-                        {
-                            login.Email = Convert.ToString(data["Email"]);
-                            login.Password = Convert.ToString(data["Password"]);
-                            AdminId = Convert.ToInt32(data["AdminId"]);
-                        }
-                        string token = GenerateSecurityToken(login.Email, AdminId);
-                        return token;
-                    }
-                    else
-                    {
-                        return null;
+                        adminRes.token = JwtMethod(adminRes.EmailId, adminRes.AdminId);
+                        return adminRes;
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    throw e;
+                    connection.Close();
+                    return null;
                 }
-                finally { this.sqlConnection.Close(); }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return default;
         }
 
-
-        private string GenerateSecurityToken(string Email, int AdminId)
+        public string JwtMethod(string emailID, long adminId)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.configuration["Jwt:SecKey"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claims = new[] {
-                new Claim(ClaimTypes.Role,"Admin"),
-                new Claim(ClaimTypes.Email,Email),
-                new Claim("AdminId",AdminId.ToString())
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var tokenKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration[("Jwt:Secretkey")]));
+
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(
+                new Claim[]
+                {
+                        new Claim(ClaimTypes.Role, "Admin"),
+                        new Claim(ClaimTypes.Email, emailID),
+                        new Claim("AdminId", adminId.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(60),
+                SigningCredentials = new SigningCredentials(tokenKey, SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = new JwtSecurityToken(this.configuration["Jwt:Issuer"],
-              this.configuration["Jwt:Issuer"],
-              claims,
-              expires: DateTime.Now.AddMinutes(60),
-              signingCredentials: credentials);
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
+            return tokenHandler.WriteToken(token);
         }
     }
 }

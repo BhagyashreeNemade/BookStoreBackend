@@ -14,19 +14,40 @@ namespace Business_Layer.Service
         {
             this.addressRL = addressRL;
         }
-        public AddAddress AddAddress(AddAddress addAddress, int userId)
+
+        public string AddAddress(AddressModel address, int userId)
         {
-            return this.addressRL.AddAddress(addAddress, userId);
+            try
+            {
+                return addressRL.AddAddress(address, userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public AddressModel UpdateAddress(AddressModel addressModel, int userId)
+
+        public AddressModel UpdateAddress(AddressModel address, int userId)
         {
-            return this.addressRL.UpdateAddress(addressModel, userId);
+            try
+            {
+                return addressRL.UpdateAddress(address, userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public string DeleteAddress(int addressId, int userId)
+        public List<AddressModel> GetAllAddress(int userId)
         {
-            return this.addressRL.DeleteAddress(addressId, userId);
+            try
+            {
+                return addressRL.GetAllAddress(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public List<AddressModel> GetAllAddresses(int userId)
-        { return this.addressRL.GetAllAddresses(userId); }
     }
 }

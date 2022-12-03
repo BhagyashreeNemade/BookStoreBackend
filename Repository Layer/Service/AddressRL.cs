@@ -11,164 +11,122 @@ namespace Repository_Layer.Service
 {
     public class AddressRL : IAddressRL
     {
-        private readonly IConfiguration configuration;
-        SqlConnection con;
+        public IConfiguration Configuration { get; }
+
         public AddressRL(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            this.Configuration = configuration;
         }
 
-        public AddAddress AddAddress(AddAddress addAddress, int userId)
+        public string AddAddress(AddressModel address, int userId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spAddAddress", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@Address", address.Address);
+                command.Parameters.AddWithValue("@City", address.City);
+                command.Parameters.AddWithValue("@State", address.State);
+                command.Parameters.AddWithValue("@TypeId", address.Type);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    SqlCommand cmd = new SqlCommand("spAddAddress", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@Address", addAddress.Address);
-                    cmd.Parameters.AddWithValue("@City", addAddress.City);
-                    cmd.Parameters.AddWithValue("@State", addAddress.State);
-                    cmd.Parameters.AddWithValue("@TypeId", addAddress.TypeId);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
-                    {
-                        return addAddress;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return "Address added";
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return null;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
-        public AddressModel UpdateAddress(AddressModel addressModel, int userId)
+        public AddressModel UpdateAddress(AddressModel address, int userId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spUpdateAddress", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@AddressId", address.AddressId);
+                command.Parameters.AddWithValue("@Address", address.Address);
+                command.Parameters.AddWithValue("@City", address.City);
+                command.Parameters.AddWithValue("@State", address.State);
+                command.Parameters.AddWithValue("@TypeId", address.Type);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    SqlCommand cmd = new SqlCommand("spUpdateAddress", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@AddressId", addressModel.AddressId);
-                    cmd.Parameters.AddWithValue("@Address", addressModel.Address);
-                    cmd.Parameters.AddWithValue("@City", addressModel.City);
-                    cmd.Parameters.AddWithValue("@State", addressModel.State);
-                    cmd.Parameters.AddWithValue("@TypeId", addressModel.TypeId);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
-                    {
-                        return addressModel;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return address;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return null;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
-
-        public string DeleteAddress(int addressId, int userId)
+        public List<AddressModel> GetAllAddress(int userId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                List<AddressModel> addressList = new List<AddressModel>();
+                SqlCommand command = new SqlCommand("spGetAllAddress", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
                 {
-                    SqlCommand cmd = new SqlCommand("spDeleteAddress", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@AddressId", addressId);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
+                    while (reader.Read())
                     {
-                        return "Address Deleted Successfully";
+                        AddressModel address = new AddressModel();
+                        AddressModel temp = GetAddress(address, reader);
+                        addressList.Add(temp);
                     }
-                    else
-                    {
-                        return "Failed to Delete Address";
-                    }
+                    return addressList;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    connection.Close();
+                    return null;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
-        public List<AddressModel> GetAllAddresses(int userId)
+        public static AddressModel GetAddress(AddressModel address, SqlDataReader rdr)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
-            {
-                try
-                {
-                    List<AddressModel> addressResponse = new List<AddressModel>();
-                    SqlCommand cmd = new SqlCommand("spGetAllAddress", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    SqlDataReader rdr = cmd.ExecuteReader();
-
-                    if (rdr.HasRows)
-                    {
-                        while (rdr.Read())
-                        {
-                            AddressModel address = new AddressModel();
-                            address.Address = Convert.ToString(rdr["Address"]);
-                            address.City = Convert.ToString(rdr["City"]);
-                            address.State = Convert.ToString(rdr["State"]);
-                            address.TypeId = Convert.ToInt32(rdr["TypeId"]);
-                            address.AddressId = Convert.ToInt32(rdr["AddressId"]);
-                            addressResponse.Add(address);
-                        }
-                        con.Close();
-                        return addressResponse;
-                    }
-                    else
-                    {
-                        con.Close();
-                        return null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-
-            }
+            address.AddressId = Convert.ToInt32(rdr["Addressid"] == DBNull.Value ? default : rdr["Addressid"]);
+            address.Address = Convert.ToString(rdr["Address"] == DBNull.Value ? default : rdr["Address"]);
+            address.City = Convert.ToString(rdr["City"] == DBNull.Value ? default : rdr["City"]);
+            address.State = Convert.ToString(rdr["State"] == DBNull.Value ? default : rdr["State"]);
+            address.Type = Convert.ToInt32(rdr["TypeId"] == DBNull.Value ? default : rdr["TypeId"]);
+            return address;
         }
     }
 }

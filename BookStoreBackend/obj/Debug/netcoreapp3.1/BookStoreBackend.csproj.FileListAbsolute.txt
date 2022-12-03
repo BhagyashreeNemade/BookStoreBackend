@@ -1,12 +1,6 @@
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.csproj.AssemblyReference.cache
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.AssemblyInfoInputs.cache
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.AssemblyInfo.cs
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.csproj.CoreCompileInputs.cache
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\appsettings.Development.json
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\appsettings.json
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.StaticWebAssets.xml
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.exe
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.deps.json
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.runtimeconfig.json
@@ -15,7 +9,11 @@ C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreap
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.pdb
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Azure.Core.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Azure.Identity.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Experimental.System.Messaging.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.Views.V3.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.Views.V4.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.Data.SqlClient.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Abstractions.dll
@@ -32,6 +30,7 @@ C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreap
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.SqlServer.Server.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.Win32.Registry.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -76,16 +75,17 @@ C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreap
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Business Layer.pdb
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Common Layer.pdb
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Repository Layer.pdb
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.csproj.AssemblyReference.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.AssemblyInfoInputs.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.AssemblyInfo.cs
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.csproj.CoreCompileInputs.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\staticwebassets\BookStoreBackend.StaticWebAssets.Manifest.cache
+C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\staticwebassets\BookStoreBackend.StaticWebAssets.xml
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.RazorTargetAssemblyInfo.cache
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.csproj.CopyComplete
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.dll
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.pdb
 C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\BookStoreBackend.genruntimeconfig.cache
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\BookStoreBackend.StaticWebAssets.xml
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.Views.V3.dll
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.Views.V4.dll
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Identity.UI.dll
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\obj\Debug\netcoreapp3.1\staticwebassets\BookStoreBackend.StaticWebAssets.xml
-C:\Users\Nemade\Bridgelabz\BookStoreBackend\BookStoreBackend\bin\Debug\netcoreapp3.1\Experimental.System.Messaging.dll

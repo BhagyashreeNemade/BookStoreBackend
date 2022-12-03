@@ -7,6 +7,6 @@ namespace Repository_Layer.Interface
 {
     public interface IAdminRL
     {
-        public string AdminLogin(LoginModel login);
+        public AdminModel AdminLogin(AdminLoginModel admin);
     }
 }

@@ -10,6 +10,6 @@ namespace Common_Layer.Model
         public string Address { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public int TypeId { get; set; }
+        public int Type { get; set; }
     }
 }

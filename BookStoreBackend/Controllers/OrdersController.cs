@@ -9,87 +9,79 @@ using Common_Layer.Model;
 namespace BookStoreBackend.Controllers
 {
 
-    [Route("api/[controller]")]
+    [Authorize(Roles = Role.User)]
+    [Route("")]
     [ApiController]
     public class OrderController : ControllerBase
     {
-        IOrderBL orderBL;
-
+        private readonly IOrderBL orderBL;
         public OrderController(IOrderBL orderBL)
         {
             this.orderBL = orderBL;
         }
 
-        [HttpPost]
-        [Route("addOrders")]
-        public IActionResult AddOrder(OrderModel order)
-        {
-            try
-            {
-                string result = this.orderBL.AddOrder(order);
-                if (result.Equals("Ordered successfully"))
-                {
-
-                    return this.Ok(new { Status = true, Message = result });
-                }
-                else
-                {
-                    return this.BadRequest(new { Status = false, Message = result });
-                }
-            }
-            catch (Exception e)
-            {
-                return this.NotFound(new { Status = false, Message = e.Message });
-            }
-        }
-
-        [HttpGet]
-        [Route("GetOrders/{UserId}")]
-        public IActionResult AlOrderDetails(int UserId)
-        {
-            try
-            {
-                var result = this.orderBL.AllOrderDetails(UserId);
-                if (result != null)
-                {
-                    return this.Ok(new { Status = true, Message = "Order Shown Below", Data = result });
-                }
-                else
-                {
-                    return this.BadRequest(new { Status = false, Message = "There is no order for the User" });
-                }
-            }
-            catch (Exception e)
-            {
-                return this.NotFound(new { Status = false, Message = e.Message });
-            }
-        }
-
-
-
-
-
-        [HttpDelete("Delete")]
-        public IActionResult DeleteOrder(int OrderId)
+        [HttpPost("Placeorder")]
+        public IActionResult PlaceOrder(PlaceOrderModel order)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var result = orderBL.DeleteOrder(OrderId, userId);
+                var result = orderBL.PlaceOrder(order, userId);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, data = result });
-
+                    return this.Ok(new { Status = true, Message = "Order Placed" });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Message = "Failed to add" });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
+                throw new Exception(ex.Message);
+            }
+        }
+        [HttpGet("Getorders")]
+        public IActionResult GetAllOrders()
+        {
+            try
+            {
+                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
+                var result = orderBL.GetAllOrders(userId);
+                if (result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Order Details", Data = result });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Failed to get" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
-                throw;
+        [HttpDelete("DeleteOrder")]
+        public IActionResult RemoveOrder(int orderId)
+        {
+            try
+            {
+                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
+                var result = orderBL.RemoveOrder(orderId);
+                if (result == true)
+                {
+                    return this.Ok(new { Status = true, Message = "Deleted" });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Failed to delete" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

@@ -8,21 +8,36 @@ using System.Text;
 
 namespace Business_Layer.Service
 {
-    public class FeedBackBL : IFeedBackBL
+    public class FeedbackBL : IFeedbackBL
     {
-        private readonly IFeedBackRL feedBackRL;
-        public FeedBackBL(IFeedBackRL feedBackRL)
+        private readonly IFeedbackRL feedbackRL;
+        public FeedbackBL(IFeedbackRL feedbackRL)
         {
-            this.feedBackRL = feedBackRL;
-        }
-        public AddFeedback AddFeedback(AddFeedback addFeedback, int userId)
-        {
-            return this.feedBackRL.AddFeedback(addFeedback, userId);
-        }
-        public List<FeedbackResponse> GetAllFeedbacks(int bookId)
-        {
-            return feedBackRL.GetAllFeedbacks(bookId);
+            this.feedbackRL = feedbackRL;
         }
 
+        public string AddFeedback(AddFeedbackModel feedback, int userId)
+        {
+            try
+            {
+                return feedbackRL.AddFeedback(feedback, userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public List<FeedbackModel> GetFeedback(int bookId)
+        {
+            try
+            {
+                return feedbackRL.GetFeedback(bookId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

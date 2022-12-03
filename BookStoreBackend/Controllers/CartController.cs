@@ -9,8 +9,7 @@ using Common_Layer.Model;
 namespace BookStoreBackend.Controllers
 {
     [Authorize(Roles = Role.User)]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class CartController : ControllerBase
     {
@@ -19,94 +18,92 @@ namespace BookStoreBackend.Controllers
         {
             this.cartBL = cartBL;
         }
-        [HttpPost("Add")]
-        public IActionResult AddToWishlist(AddToCart addToCart)
+
+        [HttpPost("Addtocart")]
+        public IActionResult AddToCart(AddToCartModel cart)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var result = cartBL.AddToCart(addToCart, userId);
+                var result = cartBL.AddToCart(cart, userId);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Book Added to cart", data = result });
-
+                    return this.Ok(new { Status = true, Message = "Added to Cart", Data = result });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Message = "Failed to add" });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        [HttpDelete("Delete")]
-        public IActionResult RemoveFromlist(int cartId)
+
+        [HttpPut("Updatecart")]
+        public IActionResult UpdateCart(int cartId, int bookQty)
+        {
+            try
+            {
+                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
+                var result = cartBL.UpdateCart(cartId, bookQty);
+                if (result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Quantity updated" });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Failed to update" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpDelete("Removefromcart")]
+        public IActionResult RemoveFromCart(int cartId)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
                 var result = cartBL.RemoveFromCart(cartId);
-                if (result != null)
+                if (result == true)
                 {
-                    return this.Ok(new { success = true });
-
+                    return this.Ok(new { Status = true, Message = "Removed from Cart" });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Message = "Failed to remove" });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        [HttpGet("GetAllCartlist")]
-        public IActionResult GetCartlistitem()
+
+        [HttpGet("Getcartitem")]
+        public IActionResult GetCartItem()
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var result = cartBL.GetAllCart(userId);
+                var result = cartBL.GetCartItem(userId);
                 if (result != null)
                 {
-                    return this.Ok(new { data = result });
-
+                    return this.Ok(new { Status = true, Message = "Cart data", Data = result });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Message = "Failed to fetch" });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
-                throw;
-            }
-        }
-        [HttpPut("UpdateQty")]
-        public IActionResult UpdateQtyInCart(int cartId, int cartQty)
-        {
-            try
-            {
-                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var res = cartBL.UpdateQtyInCart(cartId, cartQty, userId);
-                if (res.ToLower().Contains("success"))
-                {
-                    return Ok(new { success = true, message = "Update Qty sucessfull" });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = "Faild to update Qty" });
-                }
-            }
-            catch (System.Exception ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
     }

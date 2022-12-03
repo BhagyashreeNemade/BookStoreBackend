@@ -11,6 +11,8 @@ namespace Common_Layer.Model
         public int OrderId { get; set; }
        
         public string OrderDate { get; set; }
+        public int BookQuantity { get; set; }
         public BookGetOrderModel getbookModel { get; set; }
+        
     }
 }

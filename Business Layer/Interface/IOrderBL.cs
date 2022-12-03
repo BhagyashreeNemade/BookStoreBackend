@@ -7,10 +7,9 @@ namespace Business_Layer.Interface
 {
     public interface IOrderBL
     {
-        public string AddOrder(OrderModel order);
-        public List<GetOrderModel> AllOrderDetails(int UserId);
-        public string DeleteOrder(int OrderId, int userId);
-
+        public string PlaceOrder(PlaceOrderModel order, int userId);
+        public List<OrderModel> GetAllOrders(int userId);
+        public bool RemoveOrder(int orderId);
 
     }
 }

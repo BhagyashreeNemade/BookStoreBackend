@@ -7,9 +7,10 @@ namespace Repository_Layer.Interface
 {
     public interface ICartRL
     {
-        public AddToCart AddToCart(AddToCart addCart, int userId);
-        public string RemoveFromCart(int cartId);
-        public List<CartResponse> GetAllCart(int userId); 
-        public string UpdateQtyInCart(int cartId, int cartQty, int userId);
+        public AddToCartModel AddToCart(AddToCartModel cart, int userId);
+        public string UpdateCart(int cartId, int bookQty);
+        public bool RemoveFromCart(int cartId);
+        public List<CartModel> GetCartItem(int userId);
+
     }
 }

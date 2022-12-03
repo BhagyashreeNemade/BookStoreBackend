@@ -9,8 +9,7 @@ using System.Net;
 namespace BookStoreBackend.Controllers
 {
     [Authorize(Roles = Role.User)]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class AddressController : ControllerBase
     {
@@ -19,92 +18,70 @@ namespace BookStoreBackend.Controllers
         {
             this.addressBL = addressBL;
         }
-        [HttpPost("Add")]
-        public IActionResult AddAddress(AddAddress addAddress)
+
+        [HttpPost("AddAddress")]
+        public IActionResult AddAddress(AddressModel address)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var res = addressBL.AddAddress(addAddress, userId);
-                if (res != null)
+                var result = addressBL.AddAddress(address, userId);
+                if (result != null)
                 {
-                    return Ok(new { success = true, message = "Address Added sucessfully", data = res });
+                    return this.Ok(new { Status = true, Data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Faild to Add Address" });
+                    return this.BadRequest(new { Status = false, Message = "Failed to add" });
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
 
-        [HttpPut("Update")]
-        public IActionResult UpdateAddress(AddressModel updateAddress)
+        [HttpPut("UpdateAddress")]
+        public IActionResult UpdateAddress(AddressModel address)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var res = addressBL.UpdateAddress(updateAddress, userId);
-                if (res != null)
+                var result = addressBL.UpdateAddress(address, userId);
+                if (result != null)
                 {
-                    return Ok(new { success = true, message = "Address Updated sucessfully", data = res });
+                    return this.Ok(new { Status = true, Message = "Updated", Data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Faild to Update Address" });
+                    return this.BadRequest(new { Status = false, Message = "Failed to update" });
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
 
-        [HttpDelete("Delete")]
-        public IActionResult DeleteAddress(int addressId)
+        [HttpGet("Getalladdress")]
+        public IActionResult GetAllAddress()
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var res = addressBL.DeleteAddress(addressId, userId);
-                if (res.ToLower().Contains("success"))
+                var result = addressBL.GetAllAddress(userId);
+                if (result != null)
                 {
-                    return Ok(new { success = true, message = "Address Deleted sucessfully" });
+                    return this.Ok(new { Status = true, Message = "Getting Address", Data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Faild to Delete Address" });
+                    return this.BadRequest(new { Status = false, Message = "Failed to get Address" });
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-        }
-
-
-        [HttpGet("GetAll")]
-        public IActionResult GetAllAddresses()
-        {
-            try
-            {
-                int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var res = addressBL.GetAllAddresses(userId);
-                if (res != null)
-                {
-                    return Ok(new { success = true, message = "Get All Address sucessfully", data = res });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = "Faild to Get All Addresses" });
-                }
-            }
-            catch (System.Exception ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
     }

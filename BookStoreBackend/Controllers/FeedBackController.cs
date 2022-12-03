@@ -8,57 +8,57 @@ using System;
 
 namespace BookStoreBackend.Controllers
 {
-    [Authorize(Roles = Role.User)]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
-    public class FeedBackController : ControllerBase
+    public class FeedbackController : ControllerBase
     {
-        private readonly IFeedBackBL feedBackBL;
-        public FeedBackController(IFeedBackBL feedBackBL)
+        private readonly IFeedbackBL feedbackBL;
+        public FeedbackController(IFeedbackBL feedbackBL)
         {
-            this.feedBackBL = feedBackBL;
+            this.feedbackBL = feedbackBL;
         }
-        [HttpPost("Add")]
-        public IActionResult AddFeedback(AddFeedback addFeedback)
+
+        [Authorize(Roles = Role.User)]
+        [HttpPost("Addfeedback")]
+        public IActionResult AddFeedback(AddFeedbackModel feedback)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var res = feedBackBL.AddFeedback(addFeedback, userId);
-                if (res != null)
+                var result = feedbackBL.AddFeedback(feedback, userId);
+                if (result != null)
                 {
-                    return Ok(new { success = true, message = "Feedback Added sucessfully", data = res });
+                    return this.Ok(new { Status = true, Data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Faild to Add Feedback" });
+                    return this.BadRequest(new { Status = false, Message = "Failed to add" });
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
 
-        [HttpGet("GetAll")]
-        public IActionResult GetAllFeedbacks(int bookId)
+        [HttpGet("Getfeedback")]
+        public IActionResult GetFeedback(int bookId)
         {
             try
             {
-                var res = feedBackBL.GetAllFeedbacks(bookId);
-                if (res != null)
+                var result = feedbackBL.GetFeedback(bookId);
+                if (result != null)
                 {
-                    return Ok(new { success = true, message = "Feedbacks Retrieved sucessfully", data = res });
+                    return this.Ok(new { Status = true, Data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Faild to Retrieve Feedbacks" });
+                    return this.BadRequest(new { Status = false, Message = "Failed to get" });
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
     }

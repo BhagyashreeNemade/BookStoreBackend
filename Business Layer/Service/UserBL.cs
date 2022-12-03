@@ -14,56 +14,55 @@ namespace Business_Layer.Service
         {
             this.userRL = userRL;
         }
-        public RegistrationModel AddUser(RegistrationModel usermodel)
+
+        public UserRegisterModel Register(UserRegisterModel user)
         {
             try
             {
-                return this.userRL.AddUser(usermodel);
+                return userRL.Register(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        public string UserLogin(LoginModel login)
+
+        public LoginResponseModel Login(LoginModel user)
         {
             try
             {
-                return this.userRL.UserLogin(login);
+                return userRL.Login(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        public string ForgetPassword(string Email)
+
+        public string ForgotPassword(string emailId)
         {
             try
             {
-                return this.userRL.ForgetPassword(Email);
-
+                return userRL.ForgotPassword(emailId);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        public bool ResetPassword(string EmailId, string Password)
+
+        public string ResetPassword(ResetPasswordModel user)
         {
             try
             {
-                return this.userRL.ResetPassword(EmailId, Password);
+                return userRL.ResetPassword(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
-        }
 
+        }
 
     }
 }

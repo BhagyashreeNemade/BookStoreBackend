@@ -4,15 +4,14 @@ using System.Text;
 
 namespace Common_Layer.Model
 {
-    public class RegistrationModel
+    public class AdminModel
     {
 
+        public int AdminId { get; set; }
         public string FullName { get; set; }
-
-        public string Email { get; set; }
-
+        public string EmailId { get; set; }
         public string Password { get; set; }
-
-        public string Mobile_Number { get; set; }
+        public long MobileNumber { get; set; }
+        public string token { get; set; }
     }
 }

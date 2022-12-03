@@ -11,161 +11,148 @@ namespace Repository_Layer.Service
 {
     public class CartRL : ICartRL
     {
-        private readonly IConfiguration configuration;
-        SqlConnection con;
+        public IConfiguration Configuration { get; }
         public CartRL(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            Configuration = configuration;
         }
-        public AddToCart AddToCart(AddToCart addCart, int userId)
+
+        public AddToCartModel AddToCart(AddToCartModel cart, int userId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spAddToCart", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookInCart", cart.BookInCart);
+                command.Parameters.AddWithValue("@BookId", cart.BookId);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result == 1)
                 {
-                    SqlCommand cmd = new SqlCommand("spAddToCart", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@CartsQty", addCart.CartsQty);
-                    cmd.Parameters.AddWithValue("@BookId", addCart.BookId);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result > 0)
-                    {
-                        return addCart;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return cart;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return null;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
-        public string RemoveFromCart(int cartId)
+        public string UpdateCart(int cartId, int bookQty)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spUpdateCart", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookInCart", bookQty);
+                command.Parameters.AddWithValue("@CartId", cartId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    SqlCommand cmd = new SqlCommand("spRemoveFromCart", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@CartId", cartId);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
-                    {
-                        return "Item Removed from cart Successfully";
-                    }
-                    else
-                    {
-                        return "Failed to Remove item from cart";
-                    }
+                    return "Quantity updated";
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return "Failed to update";
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
-        public List<CartResponse> GetAllCart(int userId)
+
+        public bool RemoveFromCart(int cartId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spRemoveFromCart", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@CartId", cartId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    List<CartResponse> cartResponses = new List<CartResponse>();
-                    SqlCommand cmd = new SqlCommand("spGetAllCart", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-
-                    con.Open();
-                    SqlDataReader rdr = cmd.ExecuteReader();
-
-                    if (rdr.HasRows)
-                    {
-                        while (rdr.Read())
-                        {
-                            CartResponse cart = new CartResponse();
-                            cart.BookId = Convert.ToInt32(rdr["BookId"]);
-                            cart.UserId = Convert.ToInt32(rdr["UserId"]);
-                            cart.CartId = Convert.ToInt32(rdr["CartId"]);
-                            cart.BookName = Convert.ToString(rdr["BookName"]);
-                            cart.Author = Convert.ToString(rdr["Author"]);
-                            cart.BookImage = Convert.ToString(rdr["BookImage"]);
-                            cart.DiscountPrice = Convert.ToDouble(rdr["DiscountPrice"]);
-                            cart.ActualPrice = Convert.ToDouble(rdr["ActualPrice"]);
-                            cart.CartsQty = Convert.ToInt32(rdr["CartsQty"]);
-                            cart.Stock = Convert.ToInt32(rdr["Quantity"]);
-                            cartResponses.Add(cart);
-                        }
-
-                        con.Close();
-                        return cartResponses;
-                    }
-                    else
-                    {
-                        con.Close();
-                        return null;
-                    }
+                    return true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return false;
                 }
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
-        public string UpdateQtyInCart(int cartId, int cartQty, int userId)
+
+        public List<CartModel> GetCartItem(int userId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(Configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                List<CartModel> cartList = new List<CartModel>();
+                SqlCommand command = new SqlCommand("spGetAllCartItem", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
                 {
-                    CartResponse cartResponses = new CartResponse();
-                    SqlCommand cmd = new SqlCommand("spUpdateQtyInCart", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@CartId", cartId);
-                    cmd.Parameters.AddWithValue("@CartsQty", cartQty);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
+                    while (reader.Read())
                     {
-                        return "Quantity updated in Cart successfully";
+                        CartModel cart = new CartModel();
+                        CartModel temp = GetCartDetails(cart, reader);
+                        cartList.Add(temp);
                     }
-                    else
-                    {
-                        return "Failed to Update Quantity in Cart";
-                    }
+                    return cartList;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    connection.Close();
+                    return null;
                 }
-
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public CartModel GetCartDetails(CartModel cart, SqlDataReader rdr)
+        {
+            cart.BookId = Convert.ToInt32(rdr["BookId"] == DBNull.Value ? default : rdr["BookId"]);
+            cart.UserId = Convert.ToInt32(rdr["UserId"] == DBNull.Value ? default : rdr["UserId"]);
+            cart.CartId = Convert.ToInt32(rdr["CartId"] == DBNull.Value ? default : rdr["CartId"]);
+            cart.BookName = Convert.ToString(rdr["BookName"] == DBNull.Value ? default : rdr["BookName"]);
+            cart.AuthorName = Convert.ToString(rdr["AuthorName"] == DBNull.Value ? default : rdr["AuthorName"]);
+            cart.BookImage = Convert.ToString(rdr["BookImage"] == DBNull.Value ? default : rdr["BookImage"]);
+            cart.DiscountPrice = Convert.ToInt32(rdr["DiscountPrice"] == DBNull.Value ? default : rdr["DiscountPrice"]);
+            cart.OriginalPrice = Convert.ToInt32(rdr["OriginalPrice"] == DBNull.Value ? default : rdr["OriginalPrice"]);
+            cart.BookInCart = Convert.ToInt32(rdr["BookInCart"] == DBNull.Value ? default : rdr["BookInCart"]);
+            return cart;
         }
     }
 }

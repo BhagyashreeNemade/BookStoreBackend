@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace BookStoreBackend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -16,88 +16,94 @@ namespace BookStoreBackend.Controllers
         {
             this.userBL = userBL;
         }
-        [HttpPost("Register")]
-        public IActionResult UserRegistration(RegistrationModel userRegistration)
+
+        [HttpPost]
+        [Route("Register")]
+        public IActionResult Register(UserRegisterModel user)
         {
             try
             {
-                RegistrationModel registrationModel = userBL.AddUser(userRegistration);
-                if (registrationModel != null)
-                {
-                    return this.Ok(new { success = true, message = "Registration Successfull", data = registrationModel });
-                }
-                else
-                {
-                    return this.BadRequest();
-                }
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-        }
-        [HttpPost("Login")]
-        public IActionResult UserLogin(LoginModel userlogin)
-        {
-            try
-            {
-                var result = userBL.UserLogin(userlogin);
-
-
+                var result = userBL.Register(user);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Login Successful", data = result });
+                    return this.Ok(new { Status = true, Message = "User Registration successfull", Data = result });
                 }
                 else
-
-                    return this.BadRequest(new { success = false, message = "Something Goes Wrong,Login Unsuccessful" });
+                {
+                    return this.BadRequest(new { Status = false, Message = "Failed to Register" });
+                }
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception(ex.Message);
             }
         }
-        [HttpPost("ForgotPassword")]
-        public IActionResult ForgetPassword(ForgotPassword forgotpassword)
+
+        [HttpPost]
+        [Route("Login")]
+        public IActionResult Login(LoginModel user)
         {
             try
             {
-                var result = userBL.ForgetPassword(forgotpassword.Email);
+                var result = userBL.Login(user);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Mail Sent Succesfully" });
+                    return this.Ok(new { Status = true, Message = "Login successfull", Data = result });
                 }
                 else
-                    return this.BadRequest(new { success = false, message = "Something Goes Wrong" });
+                {
+                    return this.BadRequest(new { Status = false, Message = "Login Failed" });
+                }
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception(ex.Message);
             }
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPut("resetpassword")]
-        public ActionResult ResetPassword(ResetPassword resetPassword)
+        [HttpPost]
+        [Route("Forgotpassword")]
+        public IActionResult ForgotPassword(string email)
         {
             try
             {
-                var email = User.FindFirst(ClaimTypes.Email).Value.ToString();
-                var result = userBL.ResetPassword(email, resetPassword.Password);
-                if (result != false)
+                var result = userBL.ForgotPassword(email);
+                if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Password Changed Succesfully" });
+                    return this.Ok(new { Status = true, Message = "Token sent to your mail successfully" });
                 }
                 else
-                    return this.BadRequest(new { success = false, message = "Something Goes Wrong" });
+                {
+                    return this.NotFound(new { Status = false, Message = "Incorrect email or password" });
+                }
             }
             catch (Exception ex)
             {
+                throw new Exception(ex.Message);
+            }
+        }
 
-                throw ex;
+        [Authorize]
+        [HttpPost]
+        [Route("Resetpassword")]
+        public IActionResult ResetPassword(ResetPasswordModel user)
+        {
+            try
+            {
+                user.EmailId = User.FindFirst(ClaimTypes.Email).Value;
+                var result = userBL.ResetPassword(user);
+                if (result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Reset success" });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Reset failed" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }

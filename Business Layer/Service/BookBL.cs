@@ -14,33 +14,62 @@ namespace Business_Layer.Service
         {
             this.bookRL = bookRL;
         }
-        public BookModel AddBook(AddBook addBook)
+
+        public BookModel AddBook(BookModel book)
         {
             try
             {
-                return this.bookRL.AddBook(addBook);
+                return bookRL.AddBook(book);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                throw new Exception(ex.Message);
+            }
+        }
 
-                throw;
+        public BookModel UpdateBook(BookModel book)
+        {
+            try
+            {
+                return bookRL.UpdateBook(book);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public bool DeleteBook(int bookId)
+        {
+            try
+            {
+                return bookRL.DeleteBook(bookId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
         public List<BookModel> GetAllBooks()
         {
-            return this.bookRL.GetAllBooks();
+            try
+            {
+                return bookRL.GetAllBooks();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
         public BookModel GetBookById(int bookId)
         {
-            return this.bookRL.GetBookById(bookId);
-        }
-        public string DeleteBook(int bookId)
-        {
-            return this.bookRL.DeleteBook(bookId);
-        }
-        public BookModel UpdateBook(BookModel updateBook)
-        {
-            return this.bookRL.UpdateBook(updateBook);
+            try
+            {
+                return bookRL.GetBookById(bookId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

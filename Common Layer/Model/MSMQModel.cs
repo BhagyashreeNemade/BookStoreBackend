@@ -9,59 +9,35 @@ namespace Common_Layer.Model
 {
     public class MSMQModel
     {
-        MessageQueue messageQueue = new MessageQueue();
-
-        public void sendData2Queue(string Token)
+        MessageQueue messageQ = new MessageQueue();
+        public void sendData2Queue(string token)
         {
-
-            messageQueue.Path = @".\private$\Token";
-
-            if (!MessageQueue.Exists(messageQueue.Path))
+            messageQ.Path = @".\private$\Messages";//Setting the QueuPath where we want to store the messages
+            if (!MessageQueue.Exists(messageQ.Path))
             {
-
-                //Exists
-                MessageQueue.Create(messageQueue.Path);
-
+                MessageQueue.Create(messageQ.Path);
             }
-
-            messageQueue.Formatter = new XmlMessageFormatter(new Type[] { typeof(string) });
-            messageQueue.ReceiveCompleted += MessageQueue_ReceiveCompleted;
-            messageQueue.Send(Token);
-            messageQueue.BeginReceive();
-            messageQueue.Close();
+            messageQ.Formatter = new XmlMessageFormatter(new Type[] { typeof(string) });
+            messageQ.ReceiveCompleted += MessageQ_ReceiveCompleted;
+            messageQ.Send(token);
+            messageQ.BeginReceive();
+            messageQ.Close();
         }
 
-        private void MessageQueue_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
+        private void MessageQ_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
         {
-            var msg = messageQueue.EndReceive(e.AsyncResult);
-            string Token = msg.Body.ToString();
-            string subject = "Book Store Reset Link";
-            string Body = Token;
-
-            MailMessage mail = new MailMessage();
-            mail.From = new MailAddress("bhagunemade2902@gmail.com");
-            mail.To.Add("bhagunemade2902@gmail.com");
-            mail.Subject = "subject";
-
-            mail.IsBodyHtml = true;
-            string htmlBody;
-
-            htmlBody = "Write some HTML code here";
-
-            mail.Body = "<body><p>Dear Bhagyashree,<br><br>" +
-                "We have sent you a link for resetting your password.<br>" +
-                "Please copy it and paste in your swagger authorization.</body>" + Token;
-
-
-            var SMTP = new SmtpClient("smtp.gmail.com")
+            var msg = messageQ.EndReceive(e.AsyncResult);
+            string token = msg.Body.ToString();
+            string subject = "Bookstore Reset Link";
+            string Body = token;
+            var SMTP = new SmtpClient("Smtp.gmail.com")
             {
                 Port = 587,
                 Credentials = new NetworkCredential("bhagunemade2902@gmail.com", "nnuffsdchlxhqwca"),
                 EnableSsl = true
             };
-            SMTP.Send(mail);
-            messageQueue.BeginReceive();
+            SMTP.Send("bhagunemade2902@gmail.com", "bhagunemade2902@gmail.com", subject, Body);
+            messageQ.BeginReceive();
         }
     }
 }
-

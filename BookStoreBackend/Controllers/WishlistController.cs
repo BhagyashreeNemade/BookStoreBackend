@@ -8,8 +8,7 @@ using Business_Layer.Interface;
 namespace BookStoreBackend.Controllers
 {
     [Authorize(Roles = Role.User)]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class WishlistController : ControllerBase
     {
@@ -18,73 +17,69 @@ namespace BookStoreBackend.Controllers
         {
             this.wishlistBL = wishlistBL;
         }
-        [HttpPost("Add")]
-        public IActionResult AddToWishlist(int BookId)
+
+        [HttpPost("Addtowishlist")]
+        public IActionResult AddToWishlist(int bookId)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var result = wishlistBL.AddToWishList(BookId, userId);
+                var result = wishlistBL.AddToWishlist(bookId, userId);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Book Added to wishlist", data = result });
-
+                    return this.Ok(new { Status = true, Data = result });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Data = result });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        [HttpGet("GetAllWishlist")]
-        public IActionResult GetWishlistitem()
+        [HttpDelete("Removefromwishlist")]
+        public IActionResult RemoveFromWishlist(int wishlistId)
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var result = wishlistBL.GetAllWishList(userId);
-                if (result != null)
+                var result = wishlistBL.RemoveFromWishlist(wishlistId);
+                if (result == true)
                 {
-                    return this.Ok(new { data = result });
-
+                    return this.Ok(new { Status = true, Message = "Removed from wishlist" });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Message = "Failed" });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
-        [HttpDelete("Delete")]
-        public IActionResult DeleteWishlist(int wishlistId)
+
+        [HttpGet("Getwishlistitem")]
+        public IActionResult GetWishlistItem()
         {
             try
             {
                 int userId = Convert.ToInt32(User.Claims.FirstOrDefault(x => x.Type == "UserId").Value);
-                var result = wishlistBL.RemoveFromWishList(wishlistId);
+                var result = wishlistBL.GetWishlistItem(userId);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, data = result });
-
+                    return this.Ok(new { Status = true, Data = result });
                 }
                 else
                 {
-                    return this.BadRequest();
+                    return this.BadRequest(new { Status = false, Message = "Failed" });
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                throw new Exception(ex.Message);
             }
         }
     }

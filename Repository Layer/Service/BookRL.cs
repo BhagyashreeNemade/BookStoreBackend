@@ -12,240 +12,196 @@ namespace Repository_Layer.Service
 
     public class BookRL : IBookRL
     {
-        private readonly IConfiguration configuration;
-        SqlConnection con;
-
+        public IConfiguration configuration { get; }
         public BookRL(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
 
-        public BookModel AddBook(AddBook addBook)
+        public BookModel AddBook(BookModel book)
         {
-
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
-            {
-                try
-                {
-                    SqlCommand cmd = new SqlCommand("spAddBook", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@BookName", addBook.BookName);
-                    cmd.Parameters.AddWithValue("@Author", addBook.Author);
-                    cmd.Parameters.AddWithValue("@BookImage", addBook.BookImage);
-                    cmd.Parameters.AddWithValue("@BookDetail", addBook.BookDetail);
-                    cmd.Parameters.AddWithValue("@DiscountPrice", addBook.DiscountPrice);
-                    cmd.Parameters.AddWithValue("@ActualPrice", addBook.ActualPrice);
-                    cmd.Parameters.AddWithValue("@Quantity", addBook.Quantity);
-                    cmd.Parameters.AddWithValue("@Rating", addBook.Rating);
-                    cmd.Parameters.AddWithValue("@RatingCount", addBook.RatingCount);
-                    cmd.Parameters.Add("@BookId", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    int bookId = Convert.ToInt32(cmd.Parameters["@BookId"].Value.ToString());
-                    con.Close();
-
-                    if (result != 0)
-                    {
-                        BookModel bookModel = new BookModel
-                        {
-                            BookId = bookId,
-                            BookName = addBook.BookName,
-                            Author = addBook.Author,
-                            BookImage = addBook.BookImage,
-                            BookDetail = addBook.BookDetail,
-                            DiscountPrice = addBook.DiscountPrice,
-                            ActualPrice = addBook.ActualPrice,
-                            Quantity = addBook.Quantity,
-                            Rating = addBook.Rating,
-                            RatingCount = addBook.RatingCount
-                        };
-                        return bookModel;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-
-            }
-
-        }
-        public List<BookModel> GetAllBooks()
-        {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
-            {
-                try
-                {
-                    List<BookModel> bookResponse = new List<BookModel>();
-                    SqlCommand cmd = new SqlCommand("spGetAllBooks", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    con.Open();
-                    SqlDataReader rdr = cmd.ExecuteReader();
-
-                    if (rdr.HasRows)
-                    {
-                        while (rdr.Read())
-                        {
-                            BookModel bookModel = new BookModel
-                            {
-                                BookId = Convert.ToInt32(rdr["BookId"]),
-                                BookName = Convert.ToString(rdr["BookName"]),
-                                Author = Convert.ToString(rdr["Author"]),
-                                BookImage = Convert.ToString(rdr["BookImage"]),
-                                BookDetail = Convert.ToString(rdr["BookDetail"]),
-                                DiscountPrice = Convert.ToDouble(rdr["DiscountPrice"]),
-                                ActualPrice = Convert.ToDouble(rdr["ActualPrice"]),
-                                Quantity = Convert.ToInt32(rdr["Quantity"]),
-                                Rating = Convert.ToDouble(rdr["Rating"]),
-                                RatingCount = Convert.ToInt32(rdr["RatingCount"])
-                            };
-                            bookResponse.Add(bookModel);
-                        }
-                        con.Close();
-                        return bookResponse;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-
-            }
-
-        }
-        public BookModel GetBookById(int bookId)
-        {
-
+            using SqlConnection connection = new SqlConnection(configuration["ConnectionString:BookStoreDB"]);
             try
             {
-                this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-                using (con)
+                SqlCommand command = new SqlCommand("spAddbook", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookName", book.BookName);
+                command.Parameters.AddWithValue("@AuthorName", book.AuthorName);
+                command.Parameters.AddWithValue("@Rating", book.Rating);
+                command.Parameters.AddWithValue("@ReviewerCount", book.ReviewerCount);
+                command.Parameters.AddWithValue("@DiscountPrice", book.DiscountPrice);
+                command.Parameters.AddWithValue("@OriginalPrice", book.OriginalPrice);
+                command.Parameters.AddWithValue("@BookDetail", book.BookDetail);
+                command.Parameters.AddWithValue("@BookImage", book.BookImage);
+                command.Parameters.AddWithValue("@BookQuantity", book.BookQuantity);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    BookModel bookModel = new BookModel();
-                    SqlCommand cmd = new SqlCommand("spGetBookById", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@BookId", bookId);
-
-                    con.Open();
-                    SqlDataReader rdr = cmd.ExecuteReader();
-
-
-                    if (rdr.HasRows)
-                    {
-                        while (rdr.Read())
-                        {
-
-                            bookModel.BookId = Convert.ToInt32(rdr["BookId"]);
-                            bookModel.BookName = Convert.ToString(rdr["BookName"]);
-                            bookModel.Author = Convert.ToString(rdr["Author"]);
-                            bookModel.BookImage = Convert.ToString(rdr["BookImage"]);
-                            bookModel.BookDetail = Convert.ToString(rdr["BookDetail"]);
-                            bookModel.DiscountPrice = Convert.ToDouble(rdr["DiscountPrice"]);
-                            bookModel.ActualPrice = Convert.ToDouble(rdr["ActualPrice"]);
-                            bookModel.Quantity = Convert.ToInt32(rdr["Quantity"]);
-                            bookModel.Rating = Convert.ToDouble(rdr["Rating"]);
-                            bookModel.RatingCount = Convert.ToInt32(rdr["RatingCount"]);
-                        }
-                        con.Close();
-                        return bookModel;
-                    }
-                    else
-                    {
-                        con.Close();
-                        return null;
-                    }
+                    return book;
+                }
+                else
+                {
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception(ex.Message);
             }
         }
-        public string DeleteBook(int bookId)
+
+        public BookModel UpdateBook(BookModel book)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spUpdateBook", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookId", book.BookId);
+                command.Parameters.AddWithValue("@BookName", book.BookName);
+                command.Parameters.AddWithValue("@AuthorName", book.AuthorName);
+                command.Parameters.AddWithValue("@Rating", book.Rating);
+                command.Parameters.AddWithValue("@ReviewerCount", book.ReviewerCount);
+                command.Parameters.AddWithValue("@DiscountPrice", book.DiscountPrice);
+                command.Parameters.AddWithValue("@OriginalPrice", book.OriginalPrice);
+                command.Parameters.AddWithValue("@BookDetail", book.BookDetail);
+                command.Parameters.AddWithValue("@BookImage", book.BookImage);
+                command.Parameters.AddWithValue("@BookQuantity", book.BookQuantity);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    SqlCommand cmd = new SqlCommand("spDeleteBook", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@BookId", bookId);
-
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
-                    {
-                        return "Book Deleted Successfully";
-                    }
-                    else
-                    {
-                        return "Failed to Delete the Book";
-                    }
+                    return book;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return null;
                 }
-
             }
-
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-        public BookModel UpdateBook(BookModel updateBook)
+        public bool DeleteBook(int bookId)
         {
-            this.con = new SqlConnection(this.configuration.GetConnectionString("BookStore"));
-            using (con)
+            using SqlConnection connection = new SqlConnection(configuration["ConnectionString:BookStoreDB"]);
+            try
             {
-                try
+                SqlCommand command = new SqlCommand("spDeleteBook", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookId", bookId);
+
+                connection.Open();
+                var result = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (result != 0)
                 {
-                    SqlCommand cmd = new SqlCommand("spUpdateBook", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@BookId", updateBook.BookId);
-                    cmd.Parameters.AddWithValue("@BookName", updateBook.BookName);
-                    cmd.Parameters.AddWithValue("@Author", updateBook.Author);
-                    cmd.Parameters.AddWithValue("@BookImage", updateBook.BookImage);
-                    cmd.Parameters.AddWithValue("@BookDetail", updateBook.BookDetail);
-                    cmd.Parameters.AddWithValue("@DiscountPrice", updateBook.DiscountPrice);
-                    cmd.Parameters.AddWithValue("@ActualPrice", updateBook.ActualPrice);
-                    cmd.Parameters.AddWithValue("@Quantity", updateBook.Quantity);
-                    cmd.Parameters.AddWithValue("@Rating", updateBook.Rating);
-                    cmd.Parameters.AddWithValue("@RatingCount", updateBook.RatingCount);
-                    con.Open();
-                    var result = cmd.ExecuteNonQuery();
-                    con.Close();
-
-                    if (result != 0)
-                    {
-                        return updateBook;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw ex;
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public List<BookModel> GetAllBooks()
+        {
+            using SqlConnection connection = new SqlConnection(configuration["ConnectionString:BookStoreDB"]);
+            try
+            {
+                List<BookModel> bookList = new List<BookModel>();
+                SqlCommand command = new SqlCommand("spGetAllBooks", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        BookModel book = new BookModel();
+                        BookModel temp = GetBookrDetails(book, reader);
+                        bookList.Add(temp);
+                    }
+                    return bookList;
+                }
+                else
+                {
+                    connection.Close();
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public BookModel GetBookById(int bookId)
+        {
+            using SqlConnection connection = new SqlConnection(configuration["ConnectionString:BookStoreDB"]);
+            try
+            {
+                BookModel book = new BookModel();
+                SqlCommand command = new SqlCommand("spGetBookById", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.AddWithValue("@BookId", bookId);
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        book = GetBookrDetails(book, reader);
+                    }
+                    return book;
+                }
+                else
+                {
+                    connection.Close();
+                    return null;
                 }
 
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static BookModel GetBookrDetails(BookModel book, SqlDataReader reader)
+        {
+            book.BookId = Convert.ToInt32(reader["BookId"] == DBNull.Value ? default : reader["BookId"]);
+            book.BookName = Convert.ToString(reader["BookName"] == DBNull.Value ? default : reader["BookName"]);
+            book.AuthorName = Convert.ToString(reader["AuthorName"] == DBNull.Value ? default : reader["AuthorName"]);
+            book.Rating = Convert.ToDouble(reader["Rating"] == DBNull.Value ? default : reader["Rating"]);
+            book.ReviewerCount = Convert.ToInt32(reader["ReviewerCount"] == DBNull.Value ? default : reader["ReviewerCount"]);
+            book.DiscountPrice = Convert.ToInt32(reader["DiscountPrice"] == DBNull.Value ? default : reader["DiscountPrice"]);
+            book.OriginalPrice = Convert.ToInt32(reader["OriginalPrice"] == DBNull.Value ? default : reader["OriginalPrice"]);
+            book.BookDetail = Convert.ToString(reader["BookDetail"] == DBNull.Value ? default : reader["BookDetail"]);
+            book.BookImage = Convert.ToString(reader["BookImage"] == DBNull.Value ? default : reader["BookImage"]);
+            book.BookQuantity = Convert.ToInt32(reader["BookQuantity"] == DBNull.Value ? default : reader["BookQuantity"]);
+
+            return book;
         }
     }
 }

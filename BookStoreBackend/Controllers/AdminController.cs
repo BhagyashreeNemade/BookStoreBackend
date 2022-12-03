@@ -5,7 +5,7 @@ using System;
 
 namespace BookStoreBackend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class AdminController : ControllerBase
     {
@@ -14,26 +14,25 @@ namespace BookStoreBackend.Controllers
         {
             this.adminBL = adminBL;
         }
-        [HttpPost("AdminLogin")]
-        public IActionResult AdminLogin(LoginModel userlogin)
+
+        [HttpPost("Adminlogin")]
+        public IActionResult AdminLogin(AdminLoginModel admin)
         {
             try
             {
-                var result = adminBL.AdminLogin(userlogin);
-
-
+                var result = adminBL.AdminLogin(admin);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Admin Login Successful", data = result });
+                    return this.Ok(new { Status = true, Message = "Login successfull", Data = result });
                 }
                 else
-
-                    return this.BadRequest(new { success = false, message = "Something Goes Wrong,Login Unsuccessful" });
+                {
+                    return this.BadRequest(new { Status = false, Message = "Login Failed" });
+                }
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception(ex.Message);
             }
         }
     }

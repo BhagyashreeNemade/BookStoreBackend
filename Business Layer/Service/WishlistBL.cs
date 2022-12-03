@@ -14,19 +14,41 @@ namespace Business_Layer.Service
         {
             this.wishlistRL = wishlistRL;
         }
-        public string AddToWishList(int bookId, int userId)
+
+        public string AddToWishlist(int bookId, int userId)
         {
-            return this.wishlistRL.AddToWishList(bookId, userId);
-        }
-        public List<WishlistResponse> GetAllWishList(int userId)
-        {
-            return this.wishlistRL.GetAllWishList(userId);
-        }
-        public string RemoveFromWishList(int wishListId)
-        {
-            return this.wishlistRL.RemoveFromWishList(wishListId);
+            try
+            {
+                return wishlistRL.AddToWishlist(bookId, userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
+        public bool RemoveFromWishlist(int wishlistId)
+        {
+            try
+            {
+                return wishlistRL.RemoveFromWishlist(wishlistId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
+        public List<WishlistModel> GetWishlistItem(int userId)
+        {
+            try
+            {
+                return wishlistRL.GetWishlistItem(userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

@@ -2,11 +2,12 @@
 using Common_Layer.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Data;
 
 namespace BookStoreBackend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("")]
     [ApiController]
     public class BookController : ControllerBase
     {
@@ -15,117 +16,117 @@ namespace BookStoreBackend.Controllers
         {
             this.bookBL = bookBL;
         }
-        [HttpPost("Add")]
-        [Authorize(Roles = Role.Admin)]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
 
-        public IActionResult AddBook(AddBook addBook)
-        {
-            try
-            {
-                var res = bookBL.AddBook(addBook);
-                if (res != null)
-                {
-                    return Created("", new { success = true, message = "Book Added sucessfully", data = res });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = "Faild to Add Book" });
-                }
-            }
-            catch (System.Exception ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-        }
-        [Authorize(Roles = Role.User)]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("GetAllBook")]
-        public IActionResult GetAllBook()
-        {
-            try
-            {
-                var res = bookBL.GetAllBooks();
-                if (res != null)
-                {
-                    return Created("", new { data = res });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = "Faild to getall Book" });
-                }
-            }
-            catch (System.Exception ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-        }
-        [Authorize(Roles = Role.User)]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("GetBookById")]
-        public IActionResult GetBookbyId(int BookId)
-        {
-            try
-            {
-                var res = bookBL.GetBookById(BookId);
-                if (res != null)
-                {
-                    return Created("", new { data = res });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = "Faild to get Book" });
-                }
-            }
-            catch (System.Exception ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-        }
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [Authorize(Roles = Role.Admin)]
-        [HttpDelete("DeleteBook")]
-        public IActionResult DeleteBookbyId(int BookId)
+        [HttpPost("Addbook")]
+        public IActionResult AddBook(BookModel book)
         {
             try
             {
-                var res = bookBL.DeleteBook(BookId);
-                if (res != null)
+                var result = bookBL.AddBook(book);
+                if (result != null)
                 {
-                    return Created("", new { success = true, message = "Book Deleted sucessfully" });
+                    return this.Ok(new { Status = true, Message = "Book added", Data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Faild to delete Book" });
+                    return this.BadRequest(new { Status = false, Message = "Failed to Add book" });
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-        }
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [Authorize(Roles = Role.Admin)]
-        [HttpPut("UpdateBook")]
-        public IActionResult UpdateBook(BookModel bookModel)
-        {
-            try
-            {
-                var res = bookBL.UpdateBook(bookModel);
-                if (res != null)
-                {
-                    return Created("", new { success = true, message = "Book updated sucessfully", data = res });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = "Faild to update Book" });
-                }
-            }
-            catch (System.Exception ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
+                throw new Exception(ex.Message);
             }
         }
 
+        [Authorize(Roles = Role.Admin)]
+        [HttpPut]
+        [Route("Updatebook")]
+        public IActionResult UpdateBook(BookModel book)
+        {
+            try
+            {
+                var result = bookBL.UpdateBook(book);
+                if (result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Book updated", Data = result });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Failed to update" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = Role.Admin)]
+        [HttpDelete]
+        [Route("Deletebook")]
+        public IActionResult DeleteBook(int bookId)
+        {
+            try
+            {
+                var result = bookBL.DeleteBook(bookId);
+                if (result == true)
+                {
+                    return this.Ok(new { Status = true, Message = "Book deleted" });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Book does not exist" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(new { ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("Getallbooks")]
+        public IActionResult GetAllBooks()
+        {
+            try
+            {
+                var result = bookBL.GetAllBooks();
+                if (result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Your Books", Data = result });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "something went wrong" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("GetbookbyId")]
+        public IActionResult GetBookById(int bookId)
+        {
+            try
+            {
+                var result = bookBL.GetBookById(bookId);
+                if (result != null)
+                {
+                    return this.Ok(new { Status = true, Message = "Your Book", Data = result });
+                }
+                else
+                {
+                    return this.BadRequest(new { Status = false, Message = "Book does not exist" });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
